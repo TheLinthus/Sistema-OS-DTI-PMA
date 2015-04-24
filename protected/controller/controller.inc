@@ -1,0 +1,2189 @@
+<?php
+
+namespace controller;
+
+require_once './protected/model/model.inc';
+require_once './protected/database/postgresql.inc';
+
+use model;
+
+class ChamadoController {
+
+    /**
+     * Requer estar logado
+     * 
+     * @param type $input
+     * @return array
+     */
+    function cadastro(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $secretaria = new model\Secretaria();
+
+            $output['secretarias'] = $secretaria->getData();
+
+            $output['sec'] = -1;
+            $output['set'] = -1;
+            $output['area'] = -1;
+            $output['mod'] = -1;
+            $output['problema'] = -1;
+
+            $output['setores'] = [];
+            $output['etapa'] = 1;
+
+            if (isset($input['args']['sec'])) {
+                $setor = new model\Setor();
+
+                $setor->setRowsPerPage(0);
+
+                $output['setores'] = $setor->getData("secretaria = " . $input['args']['sec']);
+
+                if (empty($output['setores'])) {
+                    $output['sec'] = 0;
+                    $output['etapa'] = 1;
+                } else {
+                    $output['sec'] = $input['args']['sec'];
+                    $output['etapa'] = 2;
+                }
+
+                if (isset($input['args']['set'])) {
+                    $output['set'] = $input['args']['set'];
+                    $output['etapa'] = 3;
+                }
+                if (isset($input['args']['area'])) {
+                    $output['area'] = $input['args']['area'];
+                }
+                if (isset($input['args']['prob'])) {
+                    $output['problema'] = $input['args']['prob'];
+                }
+                if (isset($input['args']['mod'])) {
+                    $output['mod'] = $input['args']['mod'];
+                }
+            }
+
+            $area = new model\Area();
+            $modulo = new model\Modulo();
+            $problema = new model\Problema();
+
+            $output['areas'] = $area->getData();
+            $output['modulos'] = $modulo->getData();
+            $output['problemas'] = $problema->getData();
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    function confirmar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            if (isset($input['post']['secretaria']) && isset($input['post']['setor']) &&
+                    isset($input['post']['area']) && isset($input['post']['modulo']) &&
+                    isset($input['post']['problema']) && isset($input['post']['descricao']) &&
+                    isset($input['post']['patrimonio']) && isset($input['post']['prioridade'])) {
+                $setor = new \model\Setor();
+                $chamado = new \model\Chamado();
+                $arquivos = new \model\Arquivos();
+                $estado = new \model\Estado();
+
+                if (strlen($input['post']['descricao']) < 10) {
+                    echo "<script>";
+                    echo "alert('A descrição está muito curta (no mínimo 10 caracteres, escritos " . strlen($input['post']['descricao']) . ")!');";
+                    echo "history.go(-1);</script>";
+                    echo "</script>";
+                    return $output;
+                }
+
+                $setor = $setor->getData("id = '{$input['post']['setor']}'")[0];
+
+                $input['post']['iporigem'] = getIP();
+                $input['post']['usuario_cpf'] = $_SESSION['cpf'];
+                $input['post']['prioridade'] = $input['post']['prioridade'] * $setor['prioridade'];
+
+                if (empty($input['post']['patrimonio']) || $input['post']['patrimonio'] < 0) {
+                    unset($input['post']['patrimonio']);
+                } else if ($input['post']['patrimonio'] == 0 && !empty($input['post']['placa'])) {
+                    $input['post']['descricao'] .= " (Placa do patrimônio: " . $input['post']['patrimonio'] . ")";
+                }
+                if (empty($input['post']['problema']) || $input['post']['problema'] < 0) {
+                    unset($input['post']['problema']);
+                }
+                if (empty($input['post']['modulo']) || $input['post']['modulo'] < 0) {
+                    unset($input['post']['modulo']);
+                }
+                if (empty($input['post']['area']) || $input['post']['area'] < 0) {
+                    unset($input['post']['area']);
+                }
+
+                $chamado->insertRecord($input['post']);
+
+                // Adicionar estado inicial de chamado apra que possa ser atendido pela triagem
+                // Por padrão o nível inicial é 1, sem Técnico designado, Data hora atual
+                $estadoini = [];
+                $estadoini['chamado'] = $chamado->last_insert_id;
+                $estadoini['estado'] = "Aguardando Atendimento";
+                $estadoini['tipo'] = 1;
+
+                $estado->insertRecord($estadoini);
+
+                foreach ($_FILES as $uploadedfile) { // Para cada arquivo enviado junto com o chamado
+                    if ($uploadedfile['error'] == 0) { // Os 'em branco' apresentarão código de erro 4
+                        $file = [];
+                        $file['nome'] = mysql_real_escape_string($uploadedfile['name']);
+                        $file['arquivo'] = mysql_real_escape_string(file_get_contents($uploadedfile['tmp_name']));
+                        $file['chamado'] = $chamado->last_insert_id;
+//                        $arquivos->insertRecord($file);
+                    }
+                }
+
+                $output['redirect'] = "/v/chamado/ver/id/" . $chamado->last_insert_id;
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    function ver(&$input) {
+        $output = [];
+
+        $chamado = new \model\Chamado();
+        $arquivos = new \model\Arquivos();
+
+        $output['data'] = $chamado->getData("id = '{$input['args']['id']}'")[0];
+        $output['arquivos'] = $arquivos->getData("chamado = '{$input['args']['id']}'", [], ["id", "nome"]);
+
+        return $output;
+    }
+
+    function listaChamados($nivel = 0, $restringirtecnico = false, $sort = "prioridade-desc", &$page = 0, &$lastpage = 0) {
+        $chamado = new \model\Chamado();
+        $area = new \model\Area();
+        $usuario = new \model\Usuario();
+        $estado = new \model\Estado();
+
+        if ($nivel > 0) { // SELECIONA SOMENTE CHAMADOS EM QUE O ULTIMO ESTADO REPRESENTA UM ESTADO DE NIVEL $nivel E QUE PODEM SER ATENDIDAS PELO TECNICO LOGADO
+            $sql = "id IN ";
+            $sql .= "(SELECT chamado ";
+            $sql .= "FROM (select * from (select * from estado ORDER BY data DESC) es GROUP BY chamado) es "; // INVERTE A LISTA DE ESTADOS PARA O GROUP BY PEGAR A ULTIMA INSERSÃO
+            $sql .= "WHERE nivel = $nivel AND (tecnico_cpf is null or tecnico_cpf = '{$_SESSION['cpf']}') ";
+            $sql .= "GROUP BY chamado) ";
+
+            if ($restringirtecnico) {
+                $sql .= "AND (";
+
+                foreach ($_SESSION['areas'] as $area) {
+                    $sql .= "area = '$area' OR ";
+                }
+
+                $sql = trim($sql, " OR ");
+
+                $sql .= ")";
+            }
+        } else {
+            $sql = "";
+        }
+
+        if ($page > 0) {
+            $chamado->setRowsPerPage(10);
+            $chamado->setPageNo($page);
+        }
+        
+        list($sortby, $sortdirection) = explode("-", $sort);
+
+        $rs = $chamado->getData($sql, [$sortby => $sortdirection]);
+
+        $page = $chamado->getPageNo();
+        $lastpage = $chamado->getNoPages();
+
+        $data = $rs;
+
+        $usuarios = [];
+
+        foreach ($data as &$os) {
+            $os['estados'] = $estado->getData("chamado = '" . $os['id'] . "'", ['data' => 'DESC']);
+
+            if (!isset($usuarios[$os['usuario_cpf']])) {
+                $usuarios[$os['usuario_cpf']] = $usuario->getData("cpf  = '" . $os['usuario_cpf'] . "'")[0]['nome'];
+            }
+            $os['usuario'] = $usuarios[$os['usuario_cpf']];
+
+            if (!isset($areas[$os['area']])) {
+                $areas[$os['area']] = $area->getData("id  = '" . $os['area'] . "'")[0]['area'];
+            }
+            $os['area'] = $areas[$os['area']];
+        }
+
+        return $data;
+    }
+
+    function triagemupdate(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isTriagem()) {
+
+            $output['data'] = $this->listaChamados(1);
+
+            $output['md5'] = md5(serialize($output['data']));
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    function triagem(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isTriagem()) {
+
+            $output['data'] = $this->listaChamados(1);
+
+            $output['md5'] = md5(serialize($output['data']));
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    function tecnicoupdate(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isTecnico()) {
+
+            $output['data'] = $this->listaChamados(2);
+
+            $output['md5'] = md5(serialize($output['data']));
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    function tecnico(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isTecnico()) {
+
+            $output['data'] = $this->listaChamados(2);
+
+            $output['md5'] = md5(serialize($output['data']));
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+    
+    function indexupdate(&$input) {
+        $output = [];
+        
+        $output['data'] = $this->listaChamados(0,false,$input['post']['sort']);
+        
+        $output['md5'] = md5(serialize($output['data']));
+        
+        return $output;
+    }
+
+    function index(&$input) {
+        $output = [];
+
+        $output['data'] = $this->listaChamados();
+
+        $output['md5'] = md5(serialize($output['data']));
+
+        return $output;
+    }
+
+}
+
+class AreaController {
+
+    /**
+     * Recebe um id e um nome, então altera o nome de uma Área dado este id. Não permite repetição de nomes, assim como nomes em branco.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input
+     * @return array
+     */
+    function alterar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            $area = new model\Area();
+
+            if (isset($input['post']['id']) && isset($input['post']['area']) && isset($input['post']['nivel'])) {
+                $rs = $area->getData("area LIKE '" . $input['post']['area'] . "' AND id != '" . $input['post']['id'] . "'");
+                if (empty($input['post']['area'])) {
+                    $output['mensagem'] = "Erro! nome do modulo não pode ser em branco!";
+                } else if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outra área com esse nome!";
+                } else {
+                    $area->updateRecord($input['post']);
+                    $output['ok'] = true;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Recebe um nome e nível, então cadastra nova área na base local. Não permite repetição de nomes, assim como nomes em branco.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input
+     * @return array
+     */
+    function cadastro(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            $area = new model\Area();
+
+            if (isset($input['post']['area']) && isset($input['post']['nivel'])) {
+                $rs = $area->getData("area = '" . $input['post']['area'] . "'");
+                if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outra área com esse nome!";
+                } else {
+                    $area->insertRecord($input['post']);
+                    $output['ok'] = true;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * lista dados de áreas da base local.
+     * Requer estar logado com usuário nível 1 +
+     * 
+     * @param array $input
+     * @return array
+     */
+    function listar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isDti()) {
+            $area = new model\Area();
+
+            $rs = $area->getData();
+
+            $output['data'] = $rs;
+
+            if (empty($rs)) {
+                $output['mensagem'] = [];
+                $output['mensagem']['tipo'] = "highlight";
+                $output['mensagem']['icone'] = "notice";
+                $output['mensagem']['titulo'] = "Vazio:";
+                $output['mensagem']['texto'] = "Não foi possivel localizar nenhum resuldado dos dados solicitados";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Remove uma área da base local de dados.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input
+     * @return array
+     */
+    function remove(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            $area = new model\Area();
+
+            if (isset($input['args']['id'])) {
+                $area->deleteRecord($input['args']);
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+}
+
+class ModuloController {
+
+    /**
+     * Recebe um id, uma área e um nome, então altera o nome de um Modulo dado este id nessa área. Não permite repetição de nomes, assim como nomes em branco.
+     * Requer estar logado técnico com a área correspondente
+     * 
+     * @param array $input
+     * @return array
+     */
+    function alterar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $modulo = new model\Modulo();
+
+            if (isset($input['post']['id']) && isset($input['post']['modulo']) && isset($input['post']['area'])) {
+                if (!isset($_SESSION['areas'][$input['post']['area']])) {
+                    $output['mensagem'] = "Erro! Você não pode editar a Área solicitada";
+                    return $output;
+                }
+                $rs = $modulo->getData("modulo LIKE '" . $input['post']['modulo'] . "' AND id != '" . $input['post']['id'] . "' AND area = '" . $input['post']['area'] . "'");
+                if (empty($input['post']['modulo'])) {
+                    $output['mensagem'] = "Erro! nome do modulo não pode ser em branco!";
+                } else if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outro modulo com esse nome!";
+                } else {
+                    $modulo->updateRecord($input['post']);
+                    $output['ok'] = true;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Recebe uma área e um nome então cadastra novo modulo na base local relacionado com a respctive área.
+     * Não permite repetição de nomes, assim como nomes em branco.
+     * Requer estar logado técnico com a área correspondente
+     * 
+     * @param array $input
+     * @return array
+     */
+    function cadastro(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $modulo = new model\Modulo();
+
+            if (isset($input['post']['modulo']) && isset($input['post']['area'])) {
+                if (!isset($_SESSION['areas'][$input['post']['area']])) {
+                    $output['mensagem'] = "Erro! Você não pode editar a Área solicitada";
+                    return $output;
+                }
+                $rs = $modulo->getData("modulo LIKE '" . $input['post']['modulo'] . "' AND area = '" . $input['post']['area'] . "'");
+                if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outro modulo com esse nome!";
+                } else {
+                    $modulo->insertRecord($input['post']);
+                    $output['ok'] = true;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * lista dados de modulos da base local.
+     * Requer estar logado técnico com a área correspondente
+     * 
+     * @param array $input
+     * @return array
+     */
+    function listar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $modulo = new model\Modulo();
+            $area = new model\Area();
+
+            if (isset($input['args']['area'])) {
+
+                $rs = $area->getData("id = " . $input['args']['area']);
+
+                if (empty($rs)) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "notice";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "A Área solicitada não existe!";
+                    $output['area'] = "Desconhecida";
+                    return $output;
+                }
+
+                $output['area'] = $rs[0];
+
+                if (!isset($_SESSION['areas'][$input['args']['area']])) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "notice";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Você não pode editar a Área solicitada";
+                    return $output;
+                }
+
+                $rs = $modulo->getData("area = " . $input['args']['area']);
+
+                if (empty($rs)) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "highlight";
+                    $output['mensagem']['icone'] = "notice";
+                    $output['mensagem']['titulo'] = "Vazio:";
+                    $output['mensagem']['texto'] = "Não foi possivel localizar nenhum resuldado dos dados solicitados";
+                }
+
+                $output['data'] = $rs;
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Remove uma área da base local de dados.
+     * Requer estar logado técnico com a área correspondente
+     * 
+     * @param array $input
+     * @return array
+     */
+    function remove(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $modulo = new model\Modulo();
+
+            if (isset($input['args']['id'])) {
+                $rs = $modulo->getData("id = '" . $input['args']['id'] . "'");
+
+                if (empty($rs)) {
+                    $output['mensagem'] = "Erro! Módulo solicitado não existe!";
+                    return $output;
+                }
+
+                if (!isset($_SESSION['areas'][$rs[0]['area']])) {
+                    $output['mensagem'] = "Erro! Você não pode editar Módulos a Área correspondente";
+                    return $output;
+                }
+                $modulo->deleteRecord($input['args']);
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+        return $output;
+    }
+
+}
+
+class ProblemaController {
+
+    /**
+     * Recebe um id, um módulo, um nome e uma dica, então altera o nome e dica de um Problema dado este id nesse módulo. Não permite repetição de nomes, assim como nomes em branco.
+     * Requer estar logado técnico com o módulo correspondente
+     * 
+     * @param array $input
+     * @return array
+     */
+    function alterar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $problema = new model\Problema();
+            $modulo = new model\Modulo();
+
+            if (isset($input['post']['id']) && isset($input['post']['problema']) && isset($input['post']['dica']) && isset($input['post']['modulo'])) {
+                $rs = $modulo->getData("id = '" . $input['post']['modulo'] . "'");
+
+                if (!isset($_SESSION['areas'][$rs[0]['area']])) {
+                    $output['mensagem'] = "Erro! Você não pode editar o Módulo solicitado";
+                    return $output;
+                }
+                $rs = $problema->getData("problema LIKE '" . $input['post']['problema'] . "' AND id != '" . $input['post']['id'] . "' AND modulo = '" . $input['post']['modulo'] . "'");
+                if (empty($input['post']['problema'])) {
+                    $output['mensagem'] = "Erro! nome do problema não pode ser em branco!";
+                } else if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outro problema com esse nome!";
+                } else {
+                    $problema->updateRecord($input['post']);
+                    $output['ok'] = true;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Recebe um modulo, um nome e dica, então cadastra novo problema na base local relacionado ao respectivo modulo.
+     * Não permite repetição de nomes, assim como nomes em branco.
+     * Requer estar logado técnico com a módulo correspondente
+     * 
+     * @param array $input
+     * @return array
+     */
+    function cadastro(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $problema = new model\Problema();
+            $modulo = new model\Modulo();
+
+            if (isset($input['post']['problema']) && isset($input['post']['modulo'])) {
+                $rs = $modulo->getData("id = '" . $input['post']['modulo'] . "'");
+
+                if (!isset($_SESSION['areas'][$rs[0]['area']])) {
+                    $output['mensagem'] = "Erro! Você não pode editar o Módulo solicitado";
+                    return $output;
+                }
+                $rs = $problema->getData("problema LIKE '" . $input['post']['problema'] . "' AND modulo = '" . $input['post']['modulo'] . "'");
+                if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outro problema com esse nome!";
+                } else {
+                    $problema->insertRecord($input['post']);
+                    $output['ok'] = true;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * lista dados de problemas da base local dado um módulo.
+     * Requer estar logado técnico com a módulo correspondente
+     * 
+     * @param array $input
+     * @return array
+     */
+    function listar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $problema = new model\Problema();
+            $modulo = new model\Modulo();
+
+            if (isset($input['args']['modulo'])) {
+
+                $rs = $modulo->getData("id = " . $input['args']['modulo']);
+
+                if (empty($rs)) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "notice";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "O módulo solicitado não existe!";
+                    $output['modulo'] = "Desconhecido";
+                    return $output;
+                }
+
+                $output['modulo'] = $rs[0];
+
+                if (!isset($_SESSION['areas'][$output['modulo']['area']])) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "notice";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Você não pode editar o Modulo solicitado";
+                    return $output;
+                }
+
+                $rs = $problema->getData("modulo = " . $input['args']['modulo']);
+
+                if (empty($rs)) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "highlight";
+                    $output['mensagem']['icone'] = "notice";
+                    $output['mensagem']['titulo'] = "Vazio:";
+                    $output['mensagem']['texto'] = "Não foi possivel localizar nenhum resuldado dos dados solicitados";
+                }
+
+                $output['data'] = $rs;
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Remove um problema da base local de dados.
+     * Requer estar logado técnico com a módulo correspondente
+     * 
+     * @param array $input
+     * @return array
+     */
+    function remove(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $problema = new model\Problema();
+            $modulo = new model\Modulo();
+
+            if (isset($input['args']['id'])) {
+                $rs = $problema->getData("id = '" . $input['args']['id'] . "'");
+
+                if (empty($rs)) {
+                    $output['mensagem'] = "Erro! Problema solicitado não existe!";
+                    return $output;
+                }
+
+                $rs = $modulo->getData("modulo = '" . $rs[0]['modulo'] . "'");
+
+                if (!isset($_SESSION['areas'][$rs[0]['area']])) {
+                    $output['mensagem'] = "Erro! Você não pode remover esse Problema, você não tem permissão para o Módulo e Área!";
+                    return $output;
+                }
+                $problema->deleteRecord($input['args']);
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+        return $output;
+    }
+
+}
+
+class PesquisaController {
+
+    /**
+     * Habilita acesso a página de pesquisas
+     * Requer estar logado com usuário nível 1 +
+     * 
+     * @return string
+     */
+    function index() {
+        $output = [];
+
+        if (!\Login::isLogedIn() || !\Login::isDti()) {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+}
+
+class PatrimonioController {
+
+    /**
+     * Recebe um id, e atributos de patrimônio, então altera os atribudos de um Patrimônio dado este id.
+     * Não permite repetição de placas.
+     * Não permite alterar id = 0 (zero)
+     * Requer estar logado com usuário nível 2
+     * 
+     * @param array $input
+     * @return array
+     */
+    function alterar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isTecnico()) {
+            $patrimonio = new model\Patrimonio();
+
+            if (isset($input['post']['id']) && isset($input['post']['placa']) && isset($input['post']['descricao']) && isset($input['post']['observacoes'])) {
+
+                if ($input['args']['id'] == 0) {
+                    $output['error'] = "notAllowed";
+                    return $output;
+                }
+
+                $rs = $patrimonio->getData("id = '" . $input['post']['id'] . "'");
+
+                if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! O patrimônio a ser editado não existe!";
+                    return $output;
+                }
+
+                $rs = $patrimonio->getData("placa LIKE '" . $input['post']['placa'] .
+                        "' AND id != '" . $input['post']['id'] . "'");
+                if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outro patrimônio com essa placa!";
+                } else {
+                    $patrimonio->updateRecord($input['post']);
+                    $output['ok'] = true;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Recebe um id, e atributos de patrimônio, então insere novo patrimônio na base local com os atribudos passados.
+     * Requer estar logado com usuário nível 2
+     * 
+     * @param array $input
+     * @return array
+     */
+    function cadastro(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isTecnico()) {
+            $patrimonio = new model\Patrimonio();
+
+            if (isset($input['post']['placa']) && isset($input['post']['descricao']) && isset($input['post']['observacoes'])) {
+                $rs = $patrimonio->getData("placa LIKE '" . $input['post']['placa'] . "'");
+                if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outro patrimônio com essa placa!";
+                } else {
+                    $patrimonio->insertRecord($input['post']);
+                    $output['ok'] = true;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * lista patrimonios buscados na base local.
+     * Requer estar logado
+     * oculda resultado id = 0 (zero)
+     * 
+     * @param array $input
+     * @return array
+     */
+    function json(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $patrimonio = new model\Patrimonio();
+
+            $patrimonio->setRowsPerPage(4);
+
+            if (isset($input['get']['b']) && !empty($input['get']['b'])) {
+                $output = $patrimonio->getData("placa LIKE '%" . $input['get']['b'] . "%' AND id != 0");
+            }
+            $output[] = ["id" => 0, "placa" => "????", "descricao" => "Não Cadatrado", "obeservacoes" => ""];
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * lista dados de patrimonios da base local.
+     * Requer estar logado com usuário nível 1 +
+     * oculda resultado id = 0 (zero)
+     * 
+     * @param array $input
+     * @return array
+     */
+    function listar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isDti()) {
+            $page = isset($input['args']['p']) ? $input['args']['p'] : 1;
+
+            $patrimonio = new model\Patrimonio();
+
+            $patrimonio->setPageNo($page);
+
+            $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : "";
+            $filtro = isset($input['args']['b']) ? "concat_ws('|',id,placa,descricao,observacoes) LIKE '%" . $output['pesquisa'] . "%' AND " : "";
+
+            $rs = $patrimonio->getData($filtro . "id != 0");
+
+            $output['data'] = $rs;
+
+            if (empty($rs)) {
+                $output['mensagem'] = [];
+                $output['mensagem']['tipo'] = "highlight";
+                $output['mensagem']['icone'] = "notice";
+                $output['mensagem']['titulo'] = "Vazio:";
+                $output['mensagem']['texto'] = "Não foi possivel localizar nenhum resuldado dos dados solicitados";
+            }
+
+            $output['pageno'] = $page;
+            $output['lastpage'] = $patrimonio->getNoPages();
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Remove um patrimônio da base local de dados.
+     * Requer estar logado com usuário nível 2
+     * Não permite alterar id = 0 (zero)
+     * 
+     * @param array $input
+     * @return array
+     */
+    function remove(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isTecnico()) {
+            $patrimonio = new model\Patrimonio();
+
+            if (isset($input['args']['id'])) {
+
+                if ($input['args']['id'] == 0) {
+                    $output['error'] = "notAllowed";
+                    return $output;
+                }
+                $rs = $patrimonio->getData("id = '" . $input['post']['id'] . "'");
+
+                if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! O patrimônio a ser removido não existe!";
+                } else {
+                    $patrimonio->deleteRecord($input['args']);
+                }
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    function seletor(&$input) {
+        $output = [];
+
+        return $output;
+    }
+
+}
+
+class SetorController {
+
+    /**
+     * Recebe um id e um nome, então altera o nome de um Setor dado este id. Não permite repetição de nomes, assim como nomes em branco.
+     * Recebe também um identificador de referencia a Secretaria relacionada e um booleano para escola.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input
+     * @return array
+     */
+    function alterar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            $setor = new model\Setor();
+
+            if (isset($input['post']['id']) && isset($input['post']['setor']) && isset($input['post']['secretaria']) && isset($input['post']['escola'])) {
+                $rs = $setor->getData("setor LIKE '" . $input['post']['setor'] .
+                        "' AND id != '" . $input['post']['id'] .
+                        "' AND secretaria = '" . $input['post']['secretaria'] . "'");
+                if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outro setor com esse nome nessa secretaria!";
+                } else {
+                    $setor->updateRecord($input['post']);
+                    $output['ok'] = true;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Recebe um nome e um id, então cadastra nova setor na base local com esse nome e id unico. Não permite repetição de nomes, assim como nomes em branco,
+     * o id deve ser um número inteiro positivo não repetido.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input
+     * @return array
+     */
+    function cadastro(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            $setor = new model\Setor();
+
+            if (isset($input['post']['setor']) && isset($input['post']['secretaria']) && isset($input['post']['escola'])) {
+                $rs = $setor->getData("setor LIKE '" . $input['post']['setor'] .
+                        "' AND secretaria = '" . $input['post']['secretaria'] . "'");
+                if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outra setor com esse nome!";
+                } else {
+                    $setor->insertRecord($input['post']);
+                    $output['ok'] = true;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * retorna somente a lista de setores da secretaria indicada
+     * Requer estar logado
+     * 
+     * @param type $input deve conter a secretaria
+     */
+    function json($input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            if (isset($input['get']['sec'])) {
+                $output['secretaria'] = $input['get']['sec'];
+                $setor = new model\Setor();
+
+                $setor->setRowsPerPage(0);
+                $output['setores'] = $setor->getData("secretaria = " . $input['get']['sec']);
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * lista dados de setors da base local.
+     * Requer estar logado com usuário nível 1 +
+     * 
+     * @param array $input
+     * @return array
+     */
+    function listar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isDti()) {
+            $page = isset($input['args']['p']) ? $input['args']['p'] : 1;
+
+            $setor = new model\Setor();
+            $secretaria = new model\Secretaria();
+
+            $setor->setPageNo($page);
+
+            $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : "";
+            $output['filtro'] = isset($input['args']['f']) ? $input['args']['f'] : "";
+            $filtro = "";
+            $filtro .= isset($input['args']['b']) ? "setor LIKE '%" . $output['pesquisa'] . "%'" : "";
+            $filtro .= isset($input['args']['b']) && isset($input['args']['f']) ? " AND " : "";
+            $filtro .= isset($input['args']['f']) ? "secretaria = '" . $output['filtro'] . "'" : "";
+
+            $rs = $secretaria->getData();
+
+            $output['secretarias'] = [];
+
+            foreach ($rs as $data) {
+                $output['secretarias'][$data['id']] = $data['secretaria'];
+            }
+
+            if (empty($rs)) {
+                $output['mensagem'] = [];
+                $output['mensagem']['tipo'] = "highlight";
+                $output['mensagem']['icone'] = "notice";
+                $output['mensagem']['titulo'] = "Vazio:";
+                $output['mensagem']['texto'] = "Não foi possivel localizar nenhum Setor para o filtro";
+            }
+
+            $rs = $setor->getData($filtro, ['id' => 'ASC']);
+
+            $output['data'] = $rs;
+
+            if (empty($rs)) {
+                $output['mensagem'] = [];
+                $output['mensagem']['tipo'] = "highlight";
+                $output['mensagem']['icone'] = "notice";
+                $output['mensagem']['titulo'] = "Vazio:";
+                $output['mensagem']['texto'] = "Não foi possivel localizar nenhum resuldado dos dados solicitados";
+            }
+
+            $output['pageno'] = $page;
+            $output['lastpage'] = $setor->getNoPages();
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Remove um setor da base local de dados.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input
+     * @return array
+     */
+    function remove(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            $setor = new model\Setor();
+
+            if (isset($input['args']['id'])) {
+                $setor->deleteRecord($input['args']);
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+}
+
+/**
+ * Controlador
+ *
+ * @author Caio Alexandre
+ */
+class TecnicoController {
+
+    /**
+     * Metodo simples para requição de dados de um determinado técnico
+     * 
+     * @param string $cpf CPF do usuário que deve ser resgatado
+     * @return array ResultSet contendo os dados do usuário requisitado, ou null caso não econtrado
+     */
+    function getByCPF($cpf) {
+        $tecnico = new model\Tecnico();
+
+        $rs = $tecnico->getData("cpf = $cpf");
+
+        return isset($rs[0]) ? $rs[0] : null;
+    }
+
+    /**
+     * Processa a requisição de uma página de acesso no sistema de um técnico e verifica
+     * se existe uma requisição de login de um técnico, é passado por metodo $input['post']
+     * os valores de cgm ou matricula, cpf e senha que são validadeos com a base local,
+     * então autorizado ou negado login no sistema. A senha é armazenada como md5.
+     * Requer estar deslogado
+     * 
+     * @param array $input Entrada de dados
+     * @return array Saida de dados
+     */
+    function acesso(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $output['mensagem'] = [];
+            $output['mensagem']['tipo'] = "error";
+            $output['mensagem']['icone'] = "alert";
+            $output['mensagem']['titulo'] = "Erro:";
+            $output['mensagem']['texto'] = "Você já está logado no sistema";
+        } else if (isset($input['post']['cpf']) && isset($input['post']['senha'])) {
+
+            $input['post']['cpf'] = str_replace([".", "-"], "", $input['post']['cpf']); // limpa o CPF de marcadores
+
+            $tecnico = new \model\Tecnico();
+
+            $where = "cpf = '{$input['post']['cpf']}' AND senha = md5('{$input['post']['senha']}')";
+
+            // Resgada dados do tecnico no banco local
+            $rs = $tecnico->getData($where, [], ['cpf', 'telefone']);
+
+            // Se existe um tecnico com os dados correspondetens CPF e senha
+            if (isset($rs[0])) {
+                // Armazena dados do tecnico em variavel temporaria
+                $tecnico_data = $rs[0];
+                // Parte do nível 1 (mesmo sem area definida)
+                $tecnico_data['nivel'] = 1;
+                $tecnico_data['areas'] = [];
+
+                $usuario = new \model\Usuario();
+
+                // Armazena dados de usuario em vairiavel temporaria
+                $usuario_data = $usuario->getData("cpf = '{$input['post']['cpf']}'")[0];
+
+                $areastecnico = new \model\AreasTecnico();
+                $area = new \model\Area();
+
+                // Armazena areas desse tecnico em variavel temporaria
+                $tecnico_areas = $areastecnico->getData("tecnico_cpf = '{$input['post']['cpf']}'", [], ['area_id']);
+
+                foreach ($tecnico_areas as $tecnico_area) {
+                    // Armazena dados de uma area em variavel temporaria
+                    $area_data = $area->getData("id = {$tecnico_area['area_id']}")[0];
+
+                    // Adiciona uma nova area às areas do tecnico
+                    $tecnico_data['areas'][$tecnico_area['area_id']] = $area_data['area'];
+
+                    // Verifica o nível de acesso que o usuario tera baseado na area (se tem area de nível 3 será nível 3)
+                    $tecnico_data['nivel'] = max($tecnico_data['nivel'], $area_data['nivel']);
+                }
+
+                // Junta os dados da tabela técnico com a de usuário
+                $merge = array_merge($usuario_data, $tecnico_data);
+
+                // Salva dados de tecnico na sessao
+                \Login::loginTecnico($merge);
+
+                $output['redirect'] = "/";
+            } else {
+                $output['mensagem'] = [];
+                $output['mensagem']['tipo'] = "error";
+                $output['mensagem']['icone'] = "alert";
+                $output['mensagem']['titulo'] = "Erro:";
+                $output['mensagem']['texto'] = "Usuário não autenticado no sistema!";
+            }
+        }
+
+        return $output;
+    }
+
+    /**
+     * Executa uma busca e retorna apenas areas ralacionadas so CPF informado
+     * 
+     * @param string $cpf CPF para relacionar a busca
+     * @return array Lista de areas ralacionadas
+     */
+    function getAreasWithCPF($cpf) {
+        $area = new \model\Area();
+        $areas = [];
+        $resultset = $area->getData("id IN (select area_id from areas_tecnico where tecnico_cpf = '$cpf')");
+        foreach ($resultset as $data) {
+            $areas[$data['id']] = ['area' => $data['area'], 'nivel' => $data['nivel']];
+        }
+        return $areas;
+    }
+
+    /**
+     * Executa uma busca e retorna apenas areas NÃO ralacionadas so CPF informado
+     * 
+     * @param string $cpf CPF para relacionar a busca
+     * @return array Lista de areas NÃO ralacionadas
+     */
+    function getAreasWithoutCPF($cpf) {
+        $area = new \model\Area();
+        $areas = [];
+        $resultset = $area->getData("id NOT IN (select area_id from areas_tecnico where tecnico_cpf = '$cpf')");
+        foreach ($resultset as $data) {
+            $areas[$data['id']] = ['area' => $data['area'], 'nivel' => $data['nivel']];
+        }
+        return $areas;
+    }
+
+    /**
+     * Retorna uma lista de areas realacionadas e não relacionadas a um determinado CPF.
+     * E também atualiza os dados de um determinado usuario.
+     * Requer estar logado com usuário nível 3
+     * 
+     * 
+     * @param array $input Entrada de dados. Aceita uma entrada ['args']['cpf'] para listagem e um ['post']['areas'] para alteração
+     * @return array Saida de dados.
+     * <br>$output['data']['tecnico']['areas'] < lista de areas relacionadas ao CPF
+     * <br>$output['data']['areas'] < losta de areas não relacionadas ao CPF
+     */
+    function areas(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            if (isset($input['args']['cpf'])) {
+                $cpf = $input['args']['cpf'];
+                $areatecnico = new \model\AreasTecnico();
+
+                // Lista de todas as áreas as quais o técnico não possui relacionamento
+                $output['data'] = [];
+                $output['data']['areas'] = $this->getAreasWithoutCPF($cpf);
+
+                // Lista de todas as áreas as quais o técnico possui privilegios
+                $output['data']['tecnico'] = ['cpf' => $cpf];
+                $output['data']['tecnico']['areas'] = $this->getAreasWithCPF($cpf);
+
+                // Se está adicionando ou removendo área
+                if (isset($input['post']['areas'])) {
+                    // Pra cada área adicionada
+                    foreach ($input['post']['areas'] as $area) {
+                        // Inserir relação
+                        $areatecnico->insertRecord(['tecnico_cpf' => $cpf, 'area_id' => $area]);
+
+                        // Corrige, envia área pra lista correta
+                        $output['data']['tecnico']['areas'][$area] = $output['data']['areas'][$area];
+                        unset($output['data']['areas'][$area]);
+                    }
+                }
+                if (isset($input['post']['remover'])) {
+                    foreach ($input['post']['remover'] as $area) {
+                        // Remover relação
+                        $areatecnico->deleteRecord(['tecnico_cpf' => $cpf, 'area_id' => $area]);
+
+                        // Corrige, envia área pra lista correta
+                        $output['data']['areas'][$area] = $output['data']['tecnico']['areas'][$area];
+                        unset($output['data']['tecnico']['areas'][$area]);
+                    }
+                }
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Processa a requisição de uma página de cadastro de um técnico e verifica se
+     * um cadastro está sendo requisitado através do $input['post'],
+     * então cria o cadastro ou exibe mensagens adequadas.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input Entrada de dados
+     * @return array Saida de dados
+     */
+    function cadastro(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            if (isset($input['post']['cpf'])) {
+                $tecnico = new model\Tecnico();
+
+                $input['post']['cpf'] = str_replace([".", "-"], "", $input['post']['cpf']); // limpa o CPF de marcadores
+
+                if (isset($tecnico->getData("cpf = " . $input['post']['cpf'])[0])) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Usuário já é um técnico!";
+                    return $output;
+                }
+
+                $usuariocontroller = new UsuarioController();
+                $usuario = $usuariocontroller->getByCPF($input['post']['cpf']);
+
+                if ($usuario == null) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Usuário não cadastrado no sistema!";
+                } else {
+                    $input['post']['senha'] = md5("dti");
+                    $tecnico->insertRecord($input['post']);
+
+                    $output['redirect'] = "/v/tecnico/areas/cpf/" . $input['post']['cpf'];
+                }
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Resgata os dados de determinado técnico ou do próprio usuário logado.
+     * Requer estar logado com usuário nível 1 +
+     * 
+     * @param array $input Entrada de dados
+     * @return array Saida de dados
+     */
+    function info(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $cpf = isset($input['args']['cpf']) ? $input['args']['cpf'] : $_SESSION['cpf'];
+            if (\Login::isDti() || $cpf == $_SESSION['cpf']) {
+                $tecnico = $this->getByCPF($cpf);
+                if ($tecnico == null) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Técnico não cadastrado na base local";
+                } else {
+                    $usuariocontroller = new UsuarioController();
+                    $usuario = $usuariocontroller->getByCPF($cpf);
+
+                    $tecnico['areas'] = $this->getAreasWithCPF($cpf);
+
+                    $output['data'] = array_merge($usuario, $tecnico);
+                }
+            } else {
+                $output['error'] = "notAllowed";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * lista dados de usuários técnicos da base local.
+     * Requer estar logado com usuário nível 1 +
+     * 
+     * @param type $input
+     * @return string
+     */
+    function listar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isDti()) {
+            $page = isset($input['args']['p']) ? $input['args']['p'] : 1;
+
+            $usuario = new model\Usuario();
+
+            $usuario->setPageNo($page);
+
+            $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : "";
+            $filtro = isset($input['args']['b']) ? "AND concat_ws('|',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho,ip) LIKE '%" . $output['pesquisa'] . "%'" : "";
+
+            $rs = $usuario->getData("cpf in (select cpf from tecnico) $filtro");
+
+            $output['data'] = $rs;
+
+            if (empty($rs)) {
+                $output['mensagem'] = [];
+                $output['mensagem']['tipo'] = "highlight";
+                $output['mensagem']['icone'] = "notice";
+                $output['mensagem']['titulo'] = "Vazio:";
+                $output['mensagem']['texto'] = "Não foi possivel localizar nenhum resuldado dos dados solicitados";
+            }
+
+            $output['pageno'] = $page;
+            $output['lastpage'] = $usuario->getNoPages();
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Remove os atributos de técnico de um determinado usuário.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input
+     * @return array
+     */
+    function remove(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            $tecnico = new model\Tecnico();
+
+            if (isset($input['args']['cpf'])) {
+                $tecnico->deleteRecord($input['args']);
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Altera a senha do usuário que está logado no sistema.
+     * Requer estar logado como um técnico com senha.
+     * 
+     * @param type $input
+     * @return array
+     */
+    function senha(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isDti()) {
+            if (isset($input['post']['antiga']) && isset($input['post']['nova1']) && isset($input['post']['nova2'])) {
+                if ($input['post']['nova1'] !== $input['post']['antiga']) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "A senha nova é igual a senha antiga";
+                    return $output;
+                }
+
+                if ($input['post']['nova1'] !== $input['post']['nova2']) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Os campos de nova senha não conferem";
+                    return $output;
+                }
+
+                $cpf = $_SESSION['cpf'];
+                $tecnico = new \model\Tecnico();
+
+                $rs = $tecnico->getData("cpf = '$cpf' AND senha = md5('" . $input['post']['antiga'] . "')");
+                // Verifica se a senha atual bate com a senha digitada
+                if (!isset($rs[0])) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Senha Antiga incorreta";
+                    return $output;
+                }
+
+                // Altera senha (em md5 hash)
+                $tecnico->updateRecord(['cpf' => $cpf, 'senha' => md5($input['post']['nova1'])]);
+
+                \Login::logout();
+
+                $output['redirect'] = "/v/tecnico/acesso";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+}
+
+class SecretariaController {
+
+    /**
+     * Recebe um id e um nome, então altera o nome de uma Secretaria dado este id. Não permite repetição de nomes, assim como nomes em branco.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input
+     * @return array
+     */
+    function alterar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            $secretaria = new model\Secretaria();
+
+            if (isset($input['post']['id']) && isset($input['post']['secretaria'])) {
+                $rs = $secretaria->getData("secretaria LIKE '" . $input['post']['secretaria'] . "' AND id != '" . $input['post']['id'] . "'");
+                if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outra secretaria com esse nome!";
+                } else {
+                    $secretaria->updateRecord($input['post']);
+                    $output['ok'] = true;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Recebe um nome e um id, então cadastra nova secretaria na base local com esse nome e id unico. Não permite repetição de nomes, assim como nomes em branco,
+     * o id deve ser um número inteiro positivo não repetido.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input
+     * @return array
+     */
+    function cadastro(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            $secretaria = new model\Secretaria();
+
+            if (isset($input['post']['secretaria']) && isset($input['post']['id'])) {
+                $rs = $secretaria->getData("secretaria LIKE '" . $input['post']['secretaria'] . "'");
+                if (isset($rs[0])) {
+                    $output['mensagem'] = "Erro! Já existe outra secretaria com esse nome!";
+                } else {
+                    $rs = $secretaria->getData("id =  " . $input['post']['id'] . "");
+                    if (isset($rs[0])) {
+                        $output['mensagem'] = "Erro! Já existe outra secretaria com esse id!";
+                    } else {
+                        $secretaria->insertRecord($input['post']);
+                        $output['ok'] = true;
+                    }
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * lista dados de secretarias da base local.
+     * Requer estar logado com usuário nível 1 +
+     * 
+     * @param array $input
+     * @return array
+     */
+    function listar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isDti()) {
+            $page = isset($input['args']['p']) ? $input['args']['p'] : 1;
+
+            $secretaria = new model\Secretaria();
+
+            $secretaria->setPageNo($page);
+
+            $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : "";
+            $filtro = isset($input['args']['b']) ? "secretaria LIKE '%" . $output['pesquisa'] . "%'" : "";
+
+            $rs = $secretaria->getData($filtro);
+
+            $output['data'] = $rs;
+
+            if (empty($rs)) {
+                $output['mensagem'] = [];
+                $output['mensagem']['tipo'] = "highlight";
+                $output['mensagem']['icone'] = "notice";
+                $output['mensagem']['titulo'] = "Vazio:";
+                $output['mensagem']['texto'] = "Não foi possivel localizar nenhum resuldado dos dados solicitados";
+            }
+
+            $output['pageno'] = $page;
+            $output['lastpage'] = $secretaria->getNoPages();
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Remove uma secretaria da base local de dados.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input
+     * @return array
+     */
+    function remove(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            $secretaria = new model\Secretaria();
+
+            if (isset($input['args']['id'])) {
+                $secretaria->deleteRecord($input['args']);
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+}
+
+/**
+ * Controlador
+ *
+ * @author Caio Alexandre
+ */
+class UsuarioController {
+
+    /**
+     * Metodo simples para requição de dados de um determinado usuário
+     * 
+     * @param string $cpf CPF do usuário que deve ser resgatado
+     * @return array ResultSet contendo os dados do usuário requisitado, ou null caso não econtrado
+     */
+    function getByCPF($cpf) {
+        $usuario = new model\Usuario();
+
+        $rs = $usuario->getData("cpf = $cpf");
+
+        return isset($rs[0]) ? $rs[0] : null;
+    }
+
+    /**
+     * Metodo simples para requição de dados de um determinado usuário
+     * 
+     * @param string $cgm CGM do usuário que deve ser resgatado
+     * @return array ResultSet contendo os dados do usuário requisitado, ou null caso não econtrado
+     */
+    function getByCGM($cgm) {
+        $usuario = new model\Usuario();
+
+        $rs = $usuario->getData("cgm = $cgm");
+
+        return isset($rs[0]) ? $rs[0] : null;
+    }
+
+    /**
+     * Metodo simples para requição de dados de um determinado usuário
+     * 
+     * @param string $matricula Matricula do usuário que deve ser resgatado
+     * @return array ResultSet contendo os dados do usuário requisitado, ou null caso não econtrado
+     */
+    function getByMatricula($matricula) {
+        $usuario = new model\Usuario();
+
+        $rs = $usuario->getData("matricula = $matricula");
+
+        return isset($rs[0]) ? $rs[0] : null;
+    }
+
+    /**
+     * Executa logout de sessão, remove dados da sessão existente então redireciona para página inicial
+     * 
+     * @return array Saida de dados
+     */
+    function sair() {
+        $output = [];
+
+        \Login::logout();
+
+        $output['redirect'] = "/";
+
+        return $output;
+    }
+
+    /**
+     * Processa a requisição de uma página de acesso no sistema de um usuário padrão e verifica
+     * se existe uma requisição de login de um usuário, é passado por metodo $input['post']
+     * os valores de cgm ou matricula e cpf que são validadeos com a base local,
+     * então autorizado ou negado login no sistema.
+     * Requer estar deslogado
+     * 
+     * @param array $input Entrada de dados
+     * @return array Saida de dados
+     */
+    function acesso(&$input) {
+        $output = [];
+
+        if (isset($input['args']['ok'])) {
+            $output['mensagem'] = [];
+            $output['mensagem']['tipo'] = "highlight";
+            $output['mensagem']['icone'] = "info";
+            $output['mensagem']['titulo'] = "Ok!";
+            $output['mensagem']['texto'] = "Você já pode fazer login";
+        }
+
+        if (\Login::isLogedIn()) {
+            $output['mensagem'] = [];
+            $output['mensagem']['tipo'] = "error";
+            $output['mensagem']['icone'] = "alert";
+            $output['mensagem']['titulo'] = "Erro:";
+            $output['mensagem']['texto'] = "Você já está logado no sistema";
+        } else if (isset($input['post']['cpf']) && (isset($input['post']['matricula']) || isset($input['post']['cgm']))) {
+            $usuario = new \model\Usuario();
+
+            $input['post']['cpf'] = str_replace([".", "-"], "", $input['post']['cpf']); // limpa o CPF de marcadores
+
+            $rs = $usuario->getData(
+                    "(cgm = '{$input['post']['cgm']}' OR matricula = '{$input['post']['matricula']}') "
+                    . "AND cpf = '{$input['post']['cpf']}' AND cpf NOT IN (select cpf from tecnico)"
+            );
+
+            if (isset($rs[0])) {
+                \Login::loginUsuario($rs[0]);
+
+                $output['redirect'] = "/";
+            } else {
+                $output['mensagem'] = [];
+                $output['mensagem']['tipo'] = "error";
+                $output['mensagem']['icone'] = "alert";
+                $output['mensagem']['titulo'] = "Erro:";
+                $output['mensagem']['texto'] = "Usuário não autenticado no sistema!";
+            }
+        }
+
+        return $output;
+    }
+
+    /**
+     * Permite que um técnico de nivel 3 possa alterar os dados de um determinado usuário ou técnico
+     * dado um argumento de cpf de entrada para exibição de dados e um formulario post para alteração.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input Entrada de dados
+     * @return array Saida de dados
+     */
+    function alterar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            if (isset($input['post']['cpf']) && isset($input['post']['ip']) && isset($input['post']['email'])) {
+                $input['post']['cpf'] = str_replace([".", "-"], "", $input['post']['cpf']);
+
+                $usuario = new \model\Usuario();
+
+                $usuario->updateRecord($input['post']);
+            }
+
+            if (isset($input['args']['cpf'])) {
+                $cpf = str_replace([".", "-"], "", $input['args']['cpf']);
+
+                $usuario = $this->getByCPF($cpf); // Resgata dadso do usuário
+
+                if ($usuario == null) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Usuário não cadastrado na base local";
+                } else {
+                    $tecnico = new TecnicoController(); // Verifica se não é um técnico
+                    $rs = $tecnico->getByCPF($cpf);
+
+                    $usuario['tecnico'] = ($rs != null); // Verdadeiro se é um técnico
+                    $output['data'] = $usuario;
+                }
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Processa a requisição de uma página de cadastro de um usuário e verifica se
+     * um cadastro está sendo requisitado através do $input['post'], que são validados
+     * com a base de dados do sistema e-Cidade e se não há redundancias na base local,
+     * então cria o cadastro ou exibe mensagens adequadas.
+     * Requer estar deslogado
+     * 
+     * @param array $input Entrada de dados
+     * @return array Saida de dados
+     */
+    function cadastro(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $output['error'] = "notAllowed";
+            return $output;
+        }
+
+        if (isset($input['post']['cpf']) && (isset($input['post']['matricula']) || isset($input['post']['cgm'])) && isset($input['post']['email'])) {
+            $input['post']['cpf'] = str_replace([".", "-"], "", $input['post']['cpf']);
+
+            $usuario = new \model\Usuario();
+
+            $input['post']['base'] = "ecidade";
+
+            if ($input['post']['cgm'] === "" || $input['post']['matricula'] === "" || $input['post']['cpf'] === "") {
+                $output['mensagem'] = [];
+                $output['mensagem']['tipo'] = "error";
+                $output['mensagem']['icone'] = "alert";
+                $output['mensagem']['titulo'] = "Erro:";
+                $output['mensagem']['texto'] = "Matricula ou CGM devem ser preenchidos";
+            } else if (isset($input['post']['matricula'])) {
+                if ($this->getByMatricula($input['post']['matricula']) !== null) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Usuário já cadastrado";
+                } else if (!$this->matriculavalidate($input)['valid']) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Usuário não autenticado com o sistema e-Cidade";
+                } else {
+                    $usuario->insertRecord($input['post']);
+                    $output['redirect'] = "/v/usuario/acesso/ok";
+                }
+            } else {
+                if ($this->getByCGM($input['post']['cgm']) !== null) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Usuário já cadastrado";
+                } else if (!$this->cgmvalidate($input)['valid']) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Usuário não autenticado com o sistema e-Cidade";
+                } else {
+                    $input['post']['ip'] = getIP();
+
+                    $usuario->insertRecord($input['post']);
+                    $output['redirect'] = "/v/usuario/acesso/ok";
+                }
+            }
+        }
+
+        return $output;
+    }
+
+    /**
+     * Verifica se o CGM e o CPF combinam em um registro.
+     * Retorna dados se usuário é valido
+     * 
+     * @param string $input['post']['base'] Base de dados em que se deve ser feita a validação 'local' ou 'ecidade'
+     * @param string $input['post']['cpf'] CPF para ser validado
+     * @param string $input['post']['cgm'] CMG para ser validado
+     * @return array Saida de dados. $output['valid'] true ou false para o caso de ser validado ou não
+     */
+    function cgmvalidate(&$input) {
+        $output = [];
+
+        if (isset($input['post']['cgm']) && isset($input['post']['cpf']) && isset($input['post']['base'])) {
+            $input['post']['cpf'] = str_replace([".", "-"], "", $input['post']['cpf']);
+            switch ($input['post']['base']) {
+                case "local":
+                    $usuario = new model\Usuario();
+
+                    $where = "cgm = '{$input['post']['cgm']}' AND cpf = '{$input['post']['cpf']}'";
+
+                    $rs = $usuario->getData($where);
+                    break;
+                case "ecidade":
+                    $ecidade = new \database\ECidade();
+
+                    $where = "fun_cgm = '{$input['post']['cgm']}' AND fun_cpf = '{$input['post']['cpf']}'";
+
+                    $rs = $ecidade->getData("public.v_funcionario", $where);
+                    break;
+                default :
+                    $rs = [];
+                    break;
+            }
+            if (isset($rs[0])) {
+                $output['valid'] = true;
+                $output['data'] = $rs[0];
+            } else {
+                $output['valid'] = false;
+            }
+        } else {
+            $output['error'] = "badRequest";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Resgata os dados de determinado usuário ou do próprio usuário logado.
+     * Requer estar logado com usuário nível 1 + ou Ser o próprio usuário
+     * 
+     * @param type $input['args']['cpf'] CPF para resgatar dados
+     * @return array Saida de dados
+     */
+    function info(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn()) {
+            $cpf = isset($input['args']['cpf']) ? $input['args']['cpf'] : $_SESSION['cpf'];
+            if (\Login::isDti() || $cpf == $_SESSION['cpf']) {
+                $usuario = $this->getByCPF($cpf);
+                if ($usuario == null) {
+                    $output['mensagem'] = [];
+                    $output['mensagem']['tipo'] = "error";
+                    $output['mensagem']['icone'] = "alert";
+                    $output['mensagem']['titulo'] = "Erro:";
+                    $output['mensagem']['texto'] = "Usuário não cadastrado na base local";
+                } else {
+                    $tecnicocontroller = new TecnicoController();
+                    $tecnico = $tecnicocontroller->getByCPF($cpf);
+                    if ($tecnico != null) {
+                        $output['redirect'] = "/v/tecnico/info/";
+                    } else {
+                        $output['data'] = $usuario;
+                    }
+                }
+            } else {
+                $output['error'] = "notAllowed";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Retorna uma lista com 10 usuários da base local
+     * Requer estar logado com usuário nível 1 +
+     * 
+     * @param type $input['args']['p'] (opcional) número da página para exibir usuários
+     * @return array Saida de dados. data=> lista de 10 usuários dada a página
+     */
+    function listar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isDti()) {
+            $page = isset($input['args']['p']) ? $input['args']['p'] : 1;
+
+            $usuario = new model\Usuario();
+
+            $usuario->setPageNo($page);
+
+            $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : "";
+            $filtro = isset($input['args']['b']) ? "AND concat_ws('|',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho,ip) LIKE '%" . $output['pesquisa'] . "%'" : "";
+
+            $rs = $usuario->getData("cpf not in (select cpf from tecnico) $filtro");
+
+            $output['data'] = $rs;
+
+            if (empty($rs)) {
+                $output['mensagem'] = [];
+                $output['mensagem']['tipo'] = "highlight";
+                $output['mensagem']['icone'] = "notice";
+                $output['mensagem']['titulo'] = "Vazio:";
+                $output['mensagem']['texto'] = "Não foi possivel localizar nenhum resuldado dos dados solicitados";
+            }
+
+            $output['pageno'] = $page;
+            $output['lastpage'] = $usuario->getNoPages();
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Verifica se a Matricula e o CPF combinam em um registro.
+     * semelhante a cmg validate
+     * 
+     * @param array $input Entrada de dados
+     * @param string $input['post']['base'] Base de dados em que se deve ser feita a validação 'local' ou 'ecidade'
+     * @param string $input['post']['cpf'] CPF para ser validado
+     * @param string $input['post']['matricula'] Matricula para ser validado
+     * @return array Saida de dados. $output['valid'] true ou false para o caso de ser validado ou não
+     */
+    function matriculavalidate(&$input) {
+        $output = [];
+
+        if (isset($input['post']['matricula']) && isset($input['post']['cpf'])) {
+            $input['post']['cpf'] = str_replace([".", "-"], "", $input['post']['cpf']);
+            switch ($input['post']['base']) {
+                case "local":
+                    $usuario = new model\Usuario();
+
+                    $where = "matricula = '{$input['post']['matricula']}' AND cpf = '{$input['post']['cpf']}'";
+
+                    $rs = $usuario->getData($where);
+                    break;
+                case "ecidade":
+                    $ecidade = new \database\ECidade();
+
+                    $where = "fun_matricula = '{$input['post']['matricula']}' AND fun_cpf = '{$input['post']['cpf']}'";
+
+                    $rs = $ecidade->getData("public.v_funcionario", $where);
+                    break;
+                default :
+                    $rs = [];
+                    break;
+            }
+
+            if (isset($rs[0])) {
+                $output['valid'] = true;
+                $output['data'] = $rs[0];
+            } else {
+                $output['valid'] = false;
+            }
+        } else {
+            $output['error'] = "badRequest";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Remove um determinado usuário da base local, efeito CASCATE do banco removerá também chamados relacionados.
+     * Requer estar logado com usuário nível 3
+     * 
+     * @param array $input
+     * @return array
+     */
+    function remove(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isAdmin()) {
+            $usuario = new model\Usuario();
+
+            if (isset($input['args']['cpf'])) {
+                $usuario->deleteRecord($input['args']);
+            } else {
+                $output['error'] = "badRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+}
+
+class Files {
+
+    /**
+     * Exclui um diretório contendo arquivos
+     * (Recursivo)
+     * 
+     * @param string $dir Diretório a ser excluido
+     */
+    public static function rrmdir($dir) {
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+            foreach ($objects as $object) {
+                if ($object != "." && $object != "..") {
+                    if (filetype($dir . "/" . $object) == "dir")
+                        Files::rrmdir($dir . "/" . $object);
+                    else
+                        unlink($dir . "/" . $object);
+                }
+            }
+            reset($objects);
+            rmdir($dir);
+        }
+    }
+
+}

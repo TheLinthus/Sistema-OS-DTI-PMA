@@ -1,0 +1,28 @@
+RewriteEngine On
+
+Options All -Indexes
+
+<Files ~ "\.inc$">
+  Order deny,allow
+  Deny from all
+</Files>
+
+php_value session.name sample
+php_value default_charset "UTF-8"
+php_value register_globals 0
+php_value magic_quotes_gpc 0
+php_value session.use_cookies 1
+php_value session.use_only_cookies 0
+php_value session.use_trans_sid 1
+php_value arg_separator.output "&amp;"
+php_value url_rewriter.tags "a=href,area=href,frame=src,input=src,fieldset="
+
+ErrorDocument 400 /400.php
+ErrorDocument 401 /401.php
+ErrorDocument 403 /403.php
+ErrorDocument 404 /404.php
+
+#RewriteCond %{QUERY_STRING} ^$
+RewriteRule ^v/(.*)/?$    index.php?req=$1 [QSA,NC,L]
+# exemplo de Rewrite
+# RewriteRule ^estatisticas/?$    pagina-estatisticas.php [QSA,NC,L]
