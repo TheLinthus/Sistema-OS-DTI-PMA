@@ -223,17 +223,13 @@
                                     <div class="controls">
                                         <input id="file-4" name="file-4" class="input-file" type="file">
                                     </div>
-                                    <label class="control-label" for="file-5">Arquivo 5</label>
-                                    <div class="controls">
-                                        <input id="file-5" name="file-5" class="input-file" type="file">
-                                    </div>
                                 </div>
                                 <div class="control-group">
                                     <label class="control-label" for="patrimonio">Patrimônio</label>
                                     <div class="controls">
                                         <div class="input-append">
                                             <input id="patrimonio-descricao" name="patrimonio-descricao" class="input-xlarge" placeholder="(opcional) patrimônio relacionado" type="text" readonly>
-                                            <input id="patrimonio" name="patrimonio"type="hidden">
+                                            <input id="patrimonio" name="patrimonio" type="hidden">
                                             <div class="btn-group">
                                                 <button id="patrimonio-btn" class="btn" data-mod="usuario">
                                                     Selecionar
@@ -257,14 +253,14 @@
                                         <span id="prioridades">
                                             <input id="prioridade-baixa"
                                                    type="radio" value="1"
-                                                   name="prioridade" checked
+                                                   name="prioridade"
                                                    class="ui-helper-hidden-accessible"/>
                                             <label for="prioridade-baixa">
                                                 Baixa
                                             </label>
                                             <input id="prioridade-media"
                                                    type="radio" value="2"
-                                                   name="prioridade"
+                                                   name="prioridade" checked
                                                    class="ui-helper-hidden-accessible"/>
                                             <label for="prioridade-media">
                                                 Média
@@ -275,6 +271,20 @@
                                                    class="ui-helper-hidden-accessible"/>
                                             <label for="prioridade-alta">
                                                 Alta
+                                            </label>
+                                            <input id="prioridade-muitoalta"
+                                                   type="radio" value="4"
+                                                   name="prioridade"
+                                                   class="ui-helper-hidden-accessible"/>
+                                            <label for="prioridade-muitoalta">
+                                                Muito Alta
+                                            </label>
+                                            <input id="prioridade-urgente"
+                                                   type="radio" value="5"
+                                                   name="prioridade"
+                                                   class="ui-helper-hidden-accessible"/>
+                                            <label for="prioridade-urgente">
+                                                Urgente
                                             </label>
                                         </span>
                                         <p class="help-block">Selecione a prioridade, selecione opções da alta prioridade somente se necessario</p>

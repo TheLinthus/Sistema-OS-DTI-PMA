@@ -66,6 +66,7 @@ $load_time = explode(' ', $load_time);
 $load_time = $load_time[1] + $load_time[0];
 $load_start = $load_time;
 
+setlocale(LC_ALL, "pt_BR.UTF-8", "ptb");
 session_start();
 
 // Captura página solicitada

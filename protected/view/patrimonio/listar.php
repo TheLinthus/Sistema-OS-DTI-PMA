@@ -9,7 +9,7 @@
         <div class="container">
             <?php include "protected/view/header.php"; ?>
             <div id="content">
-                <div class="pagination"></div>
+                <!---<div class="pagination"></div>-->
                 <legend>Patrimonios</legend>
                 <div class="control-group">
                     <label class="control-label" for="pesquisa">Pesquisar por</label>
@@ -95,7 +95,7 @@
                 <?php include "protected/view/paginacao.php"; ?>
                 <p>* Os patrimônios são inseridos de acordo com a criação de OS. A inserção manual deve ser feita apenas para patrimônios não existentes na base do e-cidade.</p>
             </div>
-            <div class="foot-pagination"></div>
+            <!---<div class="foot-pagination"></div>-->
         </div>
         <?php include "protected/view/footer.php"; ?>
         <?php include "protected/view/footscripts.php"; ?>

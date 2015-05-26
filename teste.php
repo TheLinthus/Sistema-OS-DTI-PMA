@@ -32,6 +32,7 @@ function _normalise($path, $encoding = "UTF-8") {
     <body>
         <pre style="padding: 5px; background-color: lightgray; border: 1px solid gray;"><?php var_dump(realpath("./js/jquery-1.11.1.min.js")); ?></pre>
         <p id="t"></p>
+	<span><?php echo  mysql_escape_string("Kae'l"); ?></span>
     </body>
     <script>$("#t").html("it works!");</script>
 </html>

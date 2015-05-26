@@ -9,7 +9,7 @@
         <div class="container">
             <?php include "protected/view/header.php"; ?>
             <div id="content">
-                <div class="pagination"></div>
+                <!---<div class="pagination"></div>-->
                 <legend>Pesquisar em Base Local</legend>
                 <?php include 'protected/view/mensagem.php'; ?>
                 <div class="control-group">
@@ -29,14 +29,14 @@
                                     <li><a class="buscar-bt" data-mod="tecnico">Técnico</a></li>
                                     <li><a class="buscar-bt" data-mod="secretaria">Secretaria</a></li>
                                     <li><a class="buscar-bt" data-mod="usuario">Usuário</a></li>
-                                    <li><a class="buscar-bt" data-mod="chamado">Ordem de Serviço</a></li>
+                                    <li><a class="buscar-bt" data-mod="chamado" data-act="index">Ordem de Serviço</a></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="foot-pagination"></div>
+            <!---<div class="foot-pagination"></div>-->
         </div>
         <?php include "protected/view/footer.php"; ?>
         <?php include "protected/view/footscripts.php"; ?>

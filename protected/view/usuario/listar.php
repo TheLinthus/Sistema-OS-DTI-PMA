@@ -9,7 +9,7 @@
         <div class="container">
             <?php include "protected/view/header.php"; ?>
             <div id="content">
-                <div class="pagination"></div>
+                <!---<div class="pagination"></div>-->
                 <legend>Usuários</legend>
                 <div class="control-group">
                     <label class="control-label" for="pesquisa">Pesquisar por</label>
@@ -70,7 +70,7 @@
                 <?php } ?>
                 <?php include "protected/view/paginacao.php"; ?>
             </div>
-            <div class="foot-pagination"></div>
+            <!---<div class="foot-pagination"></div>-->
         </div>
         <?php include "protected/view/footer.php"; ?>
         <?php include "protected/view/footscripts.php"; ?>

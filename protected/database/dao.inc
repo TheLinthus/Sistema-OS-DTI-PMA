@@ -1,5 +1,7 @@
 <?php
+
 namespace database;
+
 require_once './protected/database/mysql.inc';
 
 /**
@@ -48,28 +50,28 @@ abstract class DefaultTable {
             $this->pageno = 1;
         }
     }
-    
+
     /**
      * Retorna o número de páginas
      * 
      * @return número inteiro de páginas
      */
-     function getNoPages() {
-         return $this->lastpage;
-     }
-    
+    function getNoPages() {
+        return $this->lastpage;
+    }
+
     /**
      * Retorna o número da página
      * 
      * @return número inteiro da página
      */
-     function getPageNo() {
-         return $this->pageno;
-     }
-     
-     function setRowsPerPage($number) {
-         $this->rows_per_page = $number;
-     }
+    function getPageNo() {
+        return $this->pageno;
+    }
+
+    function setRowsPerPage($number) {
+        $this->rows_per_page = $number;
+    }
 
     /**
      * Retorna dados da tabela.
@@ -92,8 +94,7 @@ abstract class DefaultTable {
         $columns_str = "";
 
         $db = new DataBase();
-        $dbconnect = $db->db_connect($this->dbname) or internalServerError("SQL: ". mysql_error()); // trigger_error(..., E_USER_ERROR);
-
+        $dbconnect = $db->db_connect($this->dbname) or internalServerError("SQL: " . mysql_error()); // trigger_error(..., E_USER_ERROR);
         // Tratar clausula WHERE se ela existir
         if (empty($where)) {
             $where_str = NULL;
@@ -164,7 +165,6 @@ abstract class DefaultTable {
         // Constrói a busca na base de dados para retornas os dados
         $query = "SELECT $columns_str FROM $this->tablename $where_str $orderby_str $limit_str";
         $result = mysql_query($query, $dbconnect) or internalServerError("SQL - " . mysql_error()); // trigger_error(..., E_USER_ERROR);
-
         // Extrai dados do retorno da base de dados em formato de um arranjo associativo
         // Havera uma entrada para cada linha retornada, iniciando de 0
         // Cada linha haverá uma série de pares "name=value" para cada coluna na tabela
@@ -189,10 +189,10 @@ abstract class DefaultTable {
      */
     function insertRecord(array $fieldarray, $extra = "") {
         $this->errors = array();
-        
+
         $db = new DataBase();
         $dbconnect = $db->db_connect($this->dbname) or internalServerError("SQL"); // trigger_error(..., E_USER_ERROR);
-        
+
         $fieldlist = $this->fieldlist;
 
         // Ira percorrer os dados de $fieldarray e removera os dados que não pertencem a tabela
@@ -204,10 +204,10 @@ abstract class DefaultTable {
         }
 
         $query = "INSERT INTO $this->tablename SET ";
-        
+
         // Constrói a clausula SET para a Insersão no banco
         foreach ($fieldarray as $item => $value) {
-            $query .= "$item='$value', ";
+            $query .= "$item='" . mysql_real_escape_string($value) . "', ";
         }
 
         // E remove o ", " após o ultimo item na clausula SET
@@ -218,7 +218,6 @@ abstract class DefaultTable {
 
         // Executa consulta de Insersão
         $result = mysql_query($query, $dbconnect) or internalServerError("SQL " . mysql_error()); // trigger_error(..., E_USER_ERROR);
-
         // Busca pelo erro 1062 referente a chave primaria duplicada
         if (mysql_errno() <> 0) {
             if (mysql_errno() == 1062) {
@@ -267,9 +266,13 @@ abstract class DefaultTable {
         // Constrói as clausulas WHERE com Chaves Primarias e clausula SET com as outras colunas
         foreach ($fieldarray as $item => $value) {
             if (isset($fieldlist[$item]['pkey'])) {
-                $where .= "$item='$value' AND ";
+                $where .= "$item='" . mysql_escape_string($value) . "' AND ";
             } else {
-                $update .= "$item='$value', ";
+                if ($value == null || strtolower($value) == "null") {
+                    $update .= "$item=NULL, ";
+                } else {
+                    $update .= "$item='" . mysql_escape_string($value) . "', ";
+                }
             }
         }
 
@@ -279,7 +282,7 @@ abstract class DefaultTable {
 
         // Constrói consulta
         $query = "UPDATE $this->tablename SET $update WHERE $where";
-        
+
         // Executa consulta de Alteração
         $result = mysql_query($query, $dbconnect) or internalServerError("SQL " . mysql_error()); // trigger_error(..., E_USER_ERROR);
 
@@ -306,7 +309,7 @@ abstract class DefaultTable {
         // Constrói as clausulas WHERE com Chaves Primarias
         foreach ($fieldarray as $item => $value) {
             if (isset($fieldlist[$item]['pkey'])) {
-                $where .= "$item='$value' AND ";
+                $where .= "$item='" . mysql_escape_string($value) . "' AND ";
             }
         }
 

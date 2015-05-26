@@ -9,7 +9,7 @@
         <div class="container">
             <?php include "protected/view/header.php"; ?>
             <div id="content">
-                <div class="pagination"></div>
+                <!---<div class="pagination"></div>-->
                 <legend>Secretarias</legend>
                 <div class="control-group">
                     <label class="control-label" for="pesquisa">Pesquisar por</label>
@@ -78,7 +78,7 @@
                     </div>
                 </div>
             </div>
-            <div class="foot-pagination"></div>
+            <!---<div class="foot-pagination"></div>-->
         </div>
         <?php include "protected/view/footer.php"; ?>
         <?php include "protected/view/footscripts.php"; ?>

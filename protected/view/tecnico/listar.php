@@ -9,7 +9,7 @@
         <div class="container">
             <?php include "protected/view/header.php"; ?>
             <div id="content">
-                <div class="pagination"></div>
+                <!---<div class="pagination"></div>-->
                 <legend>Técnicos</legend>
                 <div class="control-group">
                     <label class="control-label" for="pesquisa">Pesquisar por</label>
@@ -71,7 +71,7 @@
                 <a href="/v/tecnico/cadastro/" class="button"><span class="ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo Técnico</a>
                 <?php include "protected/view/paginacao.php"; ?>
             </div>
-            <div class="foot-pagination"></div>
+            <!---<div class="foot-pagination"></div>-->
         </div>
         <?php include "protected/view/footer.php"; ?>
         <?php include "protected/view/footscripts.php"; ?>

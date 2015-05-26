@@ -1,4 +1,188 @@
+var notifyInterval = null;
+var title = document.title;
+var clickChamado = function (v) {
+    window.location = "/v/chamado/ver/id/" + $(v).data("id");
+}
+
+function onBlur() {
+    $("body").addClass('blurred');
+    $("body").removeClass('focused');
+}
+
+function onFocus() {
+    $("body").addClass('focused');
+    $("body").removeClass('blurred');
+    clearInterval(notifyInterval);
+    document.title = title;
+}
+
+if (/*@cc_on!@*/false) { // check for Internet Explorer
+    document.onfocusin = onFocus;
+    document.onfocusout = onBlur;
+} else {
+    window.onfocus = onFocus;
+    window.onblur = onBlur;
+}
+
+function corPrioridade(v) {
+    var g = 305 - v;
+    var r = 205 + v;
+    var b = 205;
+    if (g > 255) {
+        g = 255;
+    }
+    if (r > 255) {
+        r = 255;
+    }
+    var R = ("0" + r.toString(16)).substr(-2);
+    var G = ("0" + g.toString(16)).substr(-2);
+    var B = ("0" + b.toString(16)).substr(-2);
+    return "#"+R+G+B;
+}
+
+function updateTable(data) {
+    $(".chamado-row").addClass("updating");
+    $.each(data.data, function (i, v) {
+        var cham;
+        var desc = v.descricao + " (" + v.problema + ")";
+        if ($("#chamado-" + v.id).length) {
+            cham = $("#chamado-" + v.id);
+            cham.removeClass("updating");
+            var cells = cham.find("td");
+            if (cham.data("area") !== v.area) {
+                cham.data("area", v.area);
+                $(cells[3]).html(v.area);
+                $(cells[3]).effect("highlight", 3000);
+            }
+            if (cham.data("prioridade") != parseInt(v.prioridade)) {
+                cham.data("prioridade", v.prioridade);
+                var icon = $("<span>").addClass("ui-icon").css("background", v.corprioridade);
+                $(cells[4]).html(v.nomeprioridade).prepend(icon);
+                $(cells[4]).effect("highlight", 3000);
+            }
+            if (cham.data("estado") != v.estados[0].estado) {
+                cham.data("estado", v.estados[0].id);
+                var icon = $("<span>").addClass("ui-icon").addClass("estado-" + v.estados[0].tipo).attr("title", v.estados[0].estado);
+                $(cells[6]).html(v.estados[0].estado).prepend(icon).attr("title", v.estados[0].estado);
+                $(cells[6]).effect("highlight", 3000);
+            }
+            if (cham.data("data") != v.estados[0].data) {
+                cham.data("data", v.estados[0].data);
+                $(cells[1]).html(v.estados[0].data);
+                $(cells[1]).effect("highlight", 3000);
+            }
+            if (cham.data("descricao") != desc) {
+                console.log(v.id);
+                console.log(cham.data("descricao"));
+                console.log(desc);
+                cham.data("descricao", desc);
+                $(cells[5]).html(desc).attr("title", desc);
+                $(cells[5]).effect("highlight", 3000);
+
+            }
+        } else {
+            cham = $("<tr id='chamado-" + v.id + "' tabindex='0'>");
+            cham.addClass("chamado-row");
+            cham.data("id", v.id);
+            cham.data("prioridade", v.prioridade);
+            cham.data("estado", v.estados[0].id);
+            cham.data("area", v.area);
+            cham.data("usuario", v.usuario);
+            cham.data("data", v.estados[0].data);
+            cham.data("descricao", desc);
+            cham.attr("tabindex", 0);
+            cham.append($("<td>").addClass("span1").html(v.id));
+            cham.append($("<td>").addClass("span3").addClass("more-info").attr("title", v.estados[0].data).html(v.estados[0].data).tooltip());
+            cham.append($("<td>").addClass("more-info").attr("title", v.usuario).html(v.usuario).tooltip());
+            cham.append($("<td>").addClass("span1").html(v.area));
+            var icon = $("<span>").addClass("ui-icon").css("background", v.corprioridade);
+            cham.append($("<td>").addClass("span1").html(v.nomeprioridade).prepend(icon));
+            cham.append($("<td>").addClass("span4").addClass("more-info").html(desc).attr("title", desc).tooltip());
+            icon = $("<span>").addClass("ui-icon").addClass("estado-" + v.estados[0].tipo).attr("title", v.estados[0].estado);
+            cham.append($("<td>").addClass("span3").addClass("more-info").attr("title", v.estados[0].estado).html(v.estados[0].estado).tooltip().prepend(icon));
+            cham.holdToClick(400, clickChamado);
+            cham.find("td").effect("highlight", 3000);
+        }
+        if ($(".chamado-row").length) {
+            $(".chamado-row").each(function (j, x) {
+                var test = $(x).data("prioridade") <= v.prioridade;
+                var sort = $(".sorted-desc").length ? ($(".sorted-desc").data("column") + "-desc") : ($(".sorted-asc").data("column") + "-asc");
+                switch (sort) {
+                    case "prioridade-desc" :
+                        test = parseInt($(x).data("prioridade")) <= v.prioridade;
+                        break;
+                    case "prioridade-asc" :
+                        test = parseInt($(x).data("prioridade")) > v.prioridade;
+                        break;
+                    case "id-desc" :
+                        test = parseInt($(x).data("id")) <= v.id;
+                        break;
+                    case "id-asc" :
+                        test = parseInt($(x).data("id")) > v.id;
+                        break;
+                    case "usuario-desc" :
+                        test = $(x).data("usuario") <= v.usuario;
+                        break;
+                    case "usuario-asc" :
+                        test = $(x).data("usuario") > v.usuario;
+                        break;
+                    case "area-desc" :
+                        test = $(x).data("area") <= v.area;
+                        break;
+                    case "area-asc" :
+                        test = $(x).data("area") > v.area;
+                        break;
+                    case "estado-desc" :
+                        test = $(x).data("estado") <= v.estados[0].estado;
+                        break;
+                    case "estado-asc" :
+                        test = $(x).data("estado") > v.estados[0].estado;
+                        break;
+                    case "data-desc" :
+                        test = $(x).data("data") <= v.estados[0].data;
+                        break;
+                    case "data-asc" :
+                        test = $(x).data("data") > v.estados[0].data;
+                        break;
+                }
+                if (test && $(x).data("id") != v.id) {
+                    cham.detach();
+                    $(x).before(cham);
+                    return false;
+                } else {
+                    $(x).after(cham);
+                }
+            });
+        } else {
+            $("#chamados-table tbody").append(cham);
+        }
+    });
+    $("#chamados-table").data("md5", data.md5);
+    $(".updating").remove();
+}
+
+function updateTitle(text) {
+    title = ((!$(".chamado-row").length ? "(vazio)" : "(" + $(".chamado-row").length + ")") + " " + text);
+    document.title = title;
+    var val = false;
+
+    if (document.body.className === 'blurred') {
+        if ($(".chamado-row").length) {
+            clearInterval(notifyInterval);
+            notifyInterval = setInterval(function () {
+                title = ((!$(".chamado-row").length ? "(vazio)" : "(" + $(".chamado-row").length + ")") + " " + text);
+                document.title = val ? "Lista atualizada" : title;
+                val = !val;
+            }, 1000);
+            $("#notification")[0].play();
+        } else {
+            document.title = "(vazio) " + text;
+        }
+    }
+}
+
 (function ($) {
+
     $.fn.closestToOffset = function (offset) {
         var el = null, elOffset, x = offset.left, y = offset.top, distance, dx, dxR, dy, dyB, minDistance;
         this.each(function () {
@@ -244,7 +428,9 @@ $(document).ready(function () {
         }
     });
     $(".buscar-bt").click(function () {
-        var newlocation = "/v/" + $(this).data("mod") + "/listar"; // define caminho para redirecionamento
+        var mod = $(this).data("mod");
+        var act = $(this).data("act") || "listar";
+        var newlocation = "/v/" + mod + "/" + act; // define caminho para redirecionamento
         newlocation += $("#pesquisa").val() !== "" ? "/b/" + encodeURIComponent($("#pesquisa").val()) : ""; // adiciona argumentos de busca
         newlocation += $(".filtro:selected").length ? "/f/" + $(".filtro:selected").val() : ""; // adciona argumentos de filtro
         window.location = newlocation;
@@ -252,10 +438,13 @@ $(document).ready(function () {
     $("#filtro").change(function () {
         $(".buscar-bt").click();
     });
-    
+
     $(".ui-icon, .more-info").tooltip();
 
     //$(".item").titlecase();
 
     $("textarea").autogrow();
-});
+
+    $(".attachment").button();
+}
+);

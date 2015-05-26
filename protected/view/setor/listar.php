@@ -9,7 +9,7 @@
         <div class="container">
             <?php include "protected/view/header.php"; ?>
             <div id="content">
-                <div class="pagination"></div>
+                <!---<div class="pagination"></div>-->
                 <legend>Setores</legend>
                 <div class="control-group">
                     <label class="control-label" for="pesquisa">Pesquisar por</label>
@@ -119,7 +119,7 @@
                         </div>
                         <label class="control-label" for="prioridade">Prioridade</label>
                         <div class="controls">
-                            <input id="prioridade" name="prioridade" type="number" min="1" max="10" value="1" class="input-xlarge">
+                            <input id="prioridade" name="prioridade" type="number" min="1" max="5" value="1" class="input-xlarge">
                         </div>
                         <label class="control-label" for="escola">Escola</label>
                         <div class="controls">
@@ -141,7 +141,7 @@
                 </div>
                 <?php include "protected/view/paginacao.php"; ?>
             </div>
-            <div class="foot-pagination"></div>
+            <!---<div class="foot-pagination"></div>-->
         </div>
         <?php include "protected/view/footer.php"; ?>
         <?php include "protected/view/footscripts.php"; ?>

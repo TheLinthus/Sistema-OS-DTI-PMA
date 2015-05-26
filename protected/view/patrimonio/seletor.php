@@ -8,7 +8,7 @@
         <div class="container">
             <?php include "protected/view/header.php"; ?>
             <div id="content">
-                <div class="pagination"></div>
+                <!---<div class="pagination"></div>-->
                 <div class="control-group">
                     <label class="control-label" for="buscapatrimonio">Buscar por Patrimônio</label>
                     <div class="controls">
@@ -39,7 +39,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="pagination"></div>
+                <!---<div class="pagination"></div>-->
             </div>
         </div>
         <?php include "protected/view/footscripts.php"; ?>

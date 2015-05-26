@@ -7,13 +7,46 @@ require_once './protected/database/postgresql.inc';
 
 use model;
 
+class ArquivosController {
+
+    /**
+     * Busca dados de um arquivo para download
+     * 
+     * @param type $input
+     * @return array 'bytes' contém dados do arquivo para download
+     */
+    function download(&$input) {
+        $output = [];
+
+        if (isset($input['args']['id'])) {
+            $arquivos = new model\Arquivos();
+
+            $arquivo = $arquivos->getData("id = '" . $input['args']['id'] . "'");
+
+            if (isset($arquivo[0])) {
+                $output['bytes'] = $arquivo[0]['arquivo'];
+                $output['type'] = $arquivo[0]['mimetype'];
+                $output['name'] = $arquivo[0]['nome'];
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "batRequest";
+        }
+
+        return $output;
+    }
+
+}
+
 class ChamadoController {
 
     /**
+     * Gera página para abertura de chamado. Se está definido secretaria, setor, area, modulo ou problema define etapa da abertura
      * Requer estar logado
      * 
-     * @param type $input
-     * @return array
+     * @param array $input
+     * @return array Dados de areas, modulos, problemas e secretarias para geração das listas (opções selecionaveis)
      */
     function cadastro(&$input) {
         $output = [];
@@ -37,7 +70,7 @@ class ChamadoController {
 
                 $setor->setRowsPerPage(0);
 
-                $output['setores'] = $setor->getData("secretaria = " . $input['args']['sec']);
+                $output['setores'] = $setor->getData("secretaria = " . mysql_escape_string($input['args']['sec']));
 
                 if (empty($output['setores'])) {
                     $output['sec'] = 0;
@@ -76,6 +109,54 @@ class ChamadoController {
         return $output;
     }
 
+    /**
+     * Calcula a prioridade do chamado baseado  no fator de multiplicação do setor e da opção de piroridade escolhida pelo usuario,
+     * fornecendo um calculo de prioridade adequado para cada setor
+     * 
+     * @param int $i nível de prioridade do setor
+     * @param int $f nível de prioridade escolhido pelo usuário
+     * @return int prioridade calculada
+     */
+    function calculo($i, $f) {
+        $base = (($i - 1) * 25);                            // Base do Setor (0, 25, 50, 75, 100)
+        $diferenca = $f - $i;                               // Diferença entre prioridade do Usuário e do Setor
+        $fatordomeio = (2 - sqrt(pow(3 - $i, 2))) * 4 + 8;  // Diferença entre um Setor de nível 3, para Médio ficar mais espalhado
+        $diferencapositiva = sqrt(pow($diferenca, 2));      // Valor sempre positivo da diferença
+        $soma = ($fatordomeio) + ($diferencapositiva);      // Valor para somar/subtrair da base
+        $multiplicacao = $soma * $diferenca;                // Multiplica para transformar numa subtração ou adição
+        return $base + $multiplicacao;                      // Base mais/menos ajuste de prioridade
+    }
+
+    /**
+     * Gera has de cor RGB para uma determinada porcentagem de prioridade.
+     * 
+     * @param int $v valor de 0 a 100, maior vermelho, menor verde, meio amarelo
+     * @return String has #RGB
+     */
+    function corPrioridade($v) {
+        $g = 355 - $v * 2;
+        $r = 155 + $v * 2;
+        $b = 155;
+        if ($g > 255) {
+            $g = 255;
+        }
+        if ($r > 255) {
+            $r = 255;
+        }
+        $R = str_pad(dechex($r), 2, "0", STR_PAD_LEFT);
+        $G = str_pad(dechex($g), 2, "0", STR_PAD_LEFT);
+        $B = str_pad(dechex($b), 2, "0", STR_PAD_LEFT);
+        return "#$R$G$B";
+    }
+
+    /**
+     * Coleta dados da abertura de chamado e 
+     * 
+     * Requer estar logado
+     * 
+     * @param type $input
+     * @return array
+     */
     function confirmar(&$input) {
         $output = [];
 
@@ -97,11 +178,11 @@ class ChamadoController {
                     return $output;
                 }
 
-                $setor = $setor->getData("id = '{$input['post']['setor']}'")[0];
+                $prioridade = $setor->getData("id = '" . mysql_escape_string($input['post']['setor']) . "'")[0];
 
                 $input['post']['iporigem'] = getIP();
                 $input['post']['usuario_cpf'] = $_SESSION['cpf'];
-                $input['post']['prioridade'] = $input['post']['prioridade'] * $setor['prioridade'];
+                $input['post']['prioridade'] = calculo($prioridade, $input['post']['prioridade']);
 
                 if (empty($input['post']['patrimonio']) || $input['post']['patrimonio'] < 0) {
                     unset($input['post']['patrimonio']);
@@ -132,10 +213,13 @@ class ChamadoController {
                 foreach ($_FILES as $uploadedfile) { // Para cada arquivo enviado junto com o chamado
                     if ($uploadedfile['error'] == 0) { // Os 'em branco' apresentarão código de erro 4
                         $file = [];
-                        $file['nome'] = mysql_real_escape_string($uploadedfile['name']);
-                        $file['arquivo'] = mysql_real_escape_string(file_get_contents($uploadedfile['tmp_name']));
+                        $file['nome'] = $uploadedfile['name'];
+                        $file['arquivo'] = file_get_contents($uploadedfile['tmp_name']);
                         $file['chamado'] = $chamado->last_insert_id;
-//                        $arquivos->insertRecord($file);
+                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                        $file['mimetype'] = finfo_file($finfo, $uploadedfile['tmp_name']);
+                        finfo_close($finfo);
+                        $arquivos->insertRecord($file);
                     }
                 }
 
@@ -150,33 +234,353 @@ class ChamadoController {
         return $output;
     }
 
+    function encaminhar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isDti()) {
+
+            $chamado = new \model\Chamado();
+            $arquivos = new \model\Arquivos();
+            $estado = new \model\Estado();
+
+            if (isset($input['post']['id'])) {
+                $rs = $chamado->getData("id = '{$input['post']['id']}'");
+
+                if (isset($rs[0])) {
+                    $estados = $estado->getData("chamado = '" . $rs[0]['id'] . "'");
+                    
+                    if ($rs[0]['area'] == null && (!isset($input['post']['area']) || $input['post']['id'] == "null")) {
+                        $output['mensagem'] = "Não pode encaminhar sem área";
+                        return $output;
+                    }
+                    
+                    // Se o estado atual do chamado é finalizado ou baixa
+                    if (end($estados)['nivel'] > "2") {
+                        $output['mensagem'] = "O Chamado solicitado já está finalizado";
+                        return $output;
+                    }
+                    // Se o estado do chamado já é de em atendimento e não é o mesmo usuário que está atendendo logado
+                    if (end($estados)['tipo'] == "2" && end($estados)['tecnico_cpf'] != $_SESSION['cpf']) {
+                        $output['mensagem'] = "O Chamado solicitado já está em atendimento por outro técnico";
+                        return $output;
+                    }
+                    // Se o seu nível é diferente do estado do chamado ou o usuário logado não possui a área designada
+                    if ($_SESSION['nivel'] != 3 && end($estados)['nivel'] != $_SESSION['nivel'] || (end($estados)['nivel'] != 1 && !isset($_SESSION['areas'][$rs[0]['area']]))) {
+                        $output['mensagem'] = "O Chamado solicitado não está designado para uma área que você atende.";
+                        return $output;
+                    }
+
+                    $update = [];
+                    $update['modulo'] = $input['post']['modulo'];
+                    $update['problema'] = $input['post']['problema'];
+                    $update['prioridade'] = $input['post']['prioridade'];
+                    $update['descricao'] = $input['post']['descricao'];
+                    $update['solucao'] = $input['post']['solucao'];
+                    $update['patrimonio'] = $input['post']['patrimonio'];
+                    $update['id'] = $input['post']['id'];
+
+                    if (end($estados)['nivel'] == 1) {
+                        $update['area'] = $input['post']['area'];
+                    }
+
+                    $chamado->updateRecord($update);
+                    
+                    $areachamado = $area->getData("id = " . $rs[0]['area'])[0]['id'];
+
+                    $atendendo = [];
+                    $atendendo['chamado'] = $input['post']['id'];
+                    if (end($estados)['nivel'] == 1) {
+                        $atendendo['estado'] = "Encaminhado para Técnico (" . $areachamado . ")";
+                        $atendendo['tecnico_cpf'] = $_SESSION['cpf'];
+                        $atendendo['tipo'] = 1;
+                    } elseif (end($estados)['nivel'] == 2 && end($estados)['tipo'] == 5) {
+                        $atendendo['estado'] = "Em Análise " . $areachamado;
+                        $atendendo['tecnico_cpf'] = $_SESSION['cpf'];
+                        $atendendo['tipo'] = 2;
+                    } else {
+                        $atendendo['estado'] = "Encaminhado para Terceiro";
+                        $atendendo['tipo'] = 5;
+                    }
+                    $atendendo['nivel'] = 2;
+                    $estado->insertRecord($atendendo);
+
+                    // FALTA MANIPULAÇÃO DE ARQUIVOS
+
+                    $output['ok'] = true;
+                } else {
+                    $output['error'] = "notFound";
+                }
+            } else {
+                $output['error'] = "batRequest";
+            }
+        }
+
+        return $output;
+    }
+
+    function salvar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isDti()) {
+
+            $chamado = new \model\Chamado();
+            $arquivos = new \model\Arquivos();
+            $estado = new \model\Estado();
+
+            if (isset($input['post']['id'])) {
+                $rs = $chamado->getData("id = '{$input['post']['id']}'");
+
+                if (isset($rs[0])) {
+                    $estados = $estado->getData("chamado = '" . $rs[0]['id'] . "'");
+                    // Se o estado atual do chamado é finalizado ou baixa
+                    if (end($estados)['nivel'] > "2") {
+                        $output['mensagem'] = "O Chamado solicitado já está finalizado";
+                        return $output;
+                    }
+                    // Se o estado do chamado já é de em atendimento e não é o mesmo usuário que está atendendo logado
+                    if (end($estados)['tipo'] == "2" && end($estados)['tecnico_cpf'] != $_SESSION['cpf']) {
+                        $output['mensagem'] = "O Chamado solicitado já está em atendimento por outro técnico";
+                        return $output;
+                    }
+                    // Se o seu nível é diferente do estado do chamado ou o usuário logado não possui a área designada
+                    if ($_SESSION['nivel'] != 3 && end($estados)['nivel'] != $_SESSION['nivel'] || (end($estados)['nivel'] != 1 && !isset($_SESSION['areas'][$rs[0]['area']]))) {
+                        $output['mensagem'] = "O Chamado solicitado não está designado para uma área que você atende.";
+                        return $output;
+                    }
+
+                    $update = [];
+                    $update['modulo'] = $input['post']['modulo'];
+                    $update['problema'] = $input['post']['problema'];
+                    $update['prioridade'] = $input['post']['prioridade'];
+                    $update['descricao'] = $input['post']['descricao'];
+                    $update['solucao'] = $input['post']['solucao'];
+                    $update['patrimonio'] = $input['post']['patrimonio'];
+                    $update['id'] = $input['post']['id'];
+
+                    if (end($estados)['nivel'] == 1) {
+                        $update['area'] = $input['post']['area'];
+                    }
+
+                    $chamado->updateRecord($update);
+
+                    $atendendo = [];
+                    $atendendo['chamado'] = $input['post']['id'];
+                    $atendendo['estado'] = "Em Análise " . (end($estados)['nivel'] == 1 ? "Triagem" : $output['data']['area']['area'] );
+                    $atendendo['tecnico_cpf'] = $_SESSION['cpf'];
+                    $atendendo['tipo'] = end($estados)['tipo'];
+                    $atendendo['nivel'] = end($estados)['nivel'];
+                    $estado->insertRecord($atendendo);
+
+                    // FALTA MANIPULAÇÃO DE ARQUIVOS
+
+                    $output['ok'] = true;
+                } else {
+                    $output['error'] = "notFound";
+                }
+            } else {
+                $output['error'] = "batRequest";
+            }
+        }
+
+        return $output;
+    }
+
+    /**
+     * Consulta dados e atributos de um chamado e os retorna para exibição apenas
+     * 
+     * @param array $input recebe o id como argumento para busca de um chamado especifico
+     * @return array Retorna lista compilada de dados e atributos de um determinado chamado
+     */
+    function atender(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isDti()) {
+
+            $chamado = new \model\Chamado();
+            $arquivos = new \model\Arquivos();
+            $area = new \model\Area();
+            $modulo = new \model\Modulo();
+            $problema = new \model\Problema();
+            $secretaria = new \model\Secretaria();
+            $setor = new \model\Setor();
+            $patrimonio = new \model\Patrimonio();
+            $estado = new \model\Estado();
+            $usuario = new \model\Usuario();
+
+            if (isset($input['args']['id'])) {
+                $rs = $chamado->getData("id = '{$input['args']['id']}'");
+
+                if (isset($rs[0])) {
+                    $estados = $estado->getData("chamado = '" . $rs[0]['id'] . "'");
+                    // Se o estado atual do chamado é finalizado ou baixa
+                    if (end($estados)['nivel'] > "2") {
+                        $output['mensagem'] = [];
+                        $output['mensagem']['tipo'] = "highlight";
+                        $output['mensagem']['icone'] = "notice";
+                        $output['mensagem']['titulo'] = "Finalizado:";
+                        $output['mensagem']['texto'] = "O Chamado solicitado já está finalizado";
+                        return $output;
+                    }
+                    // Se o estado do chamado já é de em atendimento e não é o mesmo usuário que está atendendo logado
+                    if (end($estados)['tipo'] == "2" && end($estados)['tecnico_cpf'] != $_SESSION['cpf']) {
+                        $output['mensagem'] = [];
+                        $output['mensagem']['tipo'] = "highlight";
+                        $output['mensagem']['icone'] = "notice";
+                        $output['mensagem']['titulo'] = "Em atendimento:";
+                        $output['mensagem']['texto'] = "O Chamado solicitado já está em atendimento por outro técnico";
+                        return $output;
+                    }
+                    // Se o seu nível é diferente do estado do chamado ou o usuário logado não possui a área designada
+                    if ($_SESSION['nivel'] != 3 && end($estados)['nivel'] != $_SESSION['nivel'] || (end($estados)['nivel'] != 1 && !isset($_SESSION['areas'][$rs[0]['area']]))) {
+                        $output['mensagem'] = [];
+                        $output['mensagem']['tipo'] = "highlight";
+                        $output['mensagem']['icone'] = "notice";
+                        $output['mensagem']['titulo'] = "Não designado:";
+                        $output['mensagem']['texto'] = "O Chamado solicitado não está designado para uma área que você atende.";
+                        return $output;
+                    }
+
+                    $output['data'] = $rs[0];
+
+                    $output['areas'] = $area->getData();
+                    $output['modulos'] = $modulo->getData();
+                    $output['problemas'] = $problema->getData();
+
+                    $output['data']['area'] = $output['data']['area'] != null ? $area->getData("id = '" . $output['data']['area'] . "'")[0] : ["area" => "Não Informado", "id" => "-1"];
+                    $output['data']['modulo'] = $output['data']['modulo'] != null ? $modulo->getData("id = '" . $output['data']['modulo'] . "'")[0] : ["modulo" => "Não Informado", "id" => "-1"];
+                    $output['data']['problema'] = $output['data']['problema'] != null ? $problema->getData("id = '" . $output['data']['problema'] . "'")[0] : ["problema" => "Não Informado", "id" => "-1"];
+                    $output['data']['patrimonio'] = $output['data']['patrimonio'] != null ? $patrimonio->getData("id = '" . $output['data']['patrimonio'] . "'")[0] : ["patrimonio" => "Não Informado", "placa" => "-1", "id" => "-1"];
+                    $output['data']['secretaria'] = $secretaria->getData("id = '" . $output['data']['secretaria'] . "'")[0]['secretaria'];
+                    $output['data']['setor'] = $setor->getData("id = '" . $output['data']['setor'] . "'")[0]['setor'];
+                    $output['data']['usuario'] = $usuario->getData("cpf = '" . $output['data']['usuario_cpf'] . "'")[0];
+                    $output['data']['estado'] = $estados;
+                    if (end($output['data']['estado'])['tipo'] == "1") {
+                        $atendendo = [];
+                        $atendendo['chamado'] = $output['data']['id'];
+                        $atendendo['estado'] = "Em Análise " . (end($output['data']['estado'])['nivel'] == 1 ? "Triagem" : $output['data']['area']['area'] );
+                        $atendendo['tecnico_cpf'] = $_SESSION['cpf'];
+                        $atendendo['tipo'] = 2;
+                        $atendendo['nivel'] = end($output['data']['estado'])['nivel'];
+                        $estado->insertRecord($atendendo);
+                        $atendendo['data'] = "NOW";
+                        $atendendo['id'] = $estado->last_insert_id;
+                        $output['data']['estado'][] = $atendendo;
+                    }
+                    foreach ($output['data']['estado'] as &$val) {
+                        $val['data'] = new \DateTime($val['data']);
+                        $val['data'] = $val['data']->format("d/m/Y H:i");
+                    }
+                    $output['arquivos'] = $arquivos->getData("chamado = '" . $output['data']['id'] . "'", [], ["id", "nome"]);
+                    foreach ($output['arquivos'] as &$arquivo) {
+                        $arquivo['tipo'] = substr($arquivo['nome'], strrpos($arquivo['nome'], '.') + 1);
+                    }
+                } else {
+                    $output['error'] = "notFound";
+                }
+            } else {
+                $output['error'] = "batRequest";
+            }
+        } else {
+            $output['error'] = "notAllowed";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Consulta dados e atributos de um chamado e os retorna para exibição apenas
+     * 
+     * @param array $input recebe o id como argumento para busca de um chamado especifico
+     * @return array Retorna lista compilada de dados e atributos de um determinado chamado
+     */
     function ver(&$input) {
         $output = [];
 
         $chamado = new \model\Chamado();
         $arquivos = new \model\Arquivos();
+        $area = new \model\Area();
+        $modulo = new \model\Modulo();
+        $problema = new \model\Problema();
+        $secretaria = new \model\Secretaria();
+        $setor = new \model\Setor();
+        $patrimonio = new \model\Patrimonio();
+        $estado = new \model\Estado();
+        $usuario = new \model\Usuario();
 
-        $output['data'] = $chamado->getData("id = '{$input['args']['id']}'")[0];
-        $output['arquivos'] = $arquivos->getData("chamado = '{$input['args']['id']}'", [], ["id", "nome"]);
+        if (isset($input['args']['id'])) {
+            $rs = $chamado->getData("id = '{$input['args']['id']}'");
+
+            if (isset($rs[0])) {
+                $output['data'] = $rs[0];
+                $output['data']['area'] = $output['data']['area'] != null ? $area->getData("id = '" . $output['data']['area'] . "'")[0]['area'] : "Não Informado";
+                $output['data']['modulo'] = $output['data']['modulo'] != null ? $modulo->getData("id = '" . $output['data']['modulo'] . "'")[0]['modulo'] : "Não Informado";
+                $output['data']['problema'] = $output['data']['problema'] != null ? $problema->getData("id = '" . $output['data']['problema'] . "'")[0]['problema'] : "Não Informado";
+                $output['data']['patrimonio'] = $output['data']['patrimonio'] != null ? $patrimonio->getData("id = '" . $output['data']['patrimonio'] . "'")[0]['patrimonio'] : "Não Informado";
+                $output['data']['secretaria'] = $secretaria->getData("id = '" . $output['data']['secretaria'] . "'")[0]['secretaria'];
+                $output['data']['setor'] = $setor->getData("id = '" . $output['data']['setor'] . "'")[0]['setor'];
+                $output['data']['usuario'] = $usuario->getData("cpf = '" . $output['data']['usuario_cpf'] . "'")[0];
+                $output['data']['estado'] = $estado->getData("chamado = '" . $output['data']['id'] . "'");
+                if ((int) $output['data']['prioridade'] < 20) {
+                    $output['data']['nomeprioridade'] = "Baixa";
+                } elseif ((int) $output['data']['prioridade'] < 40) {
+                    $output['data']['nomeprioridade'] = "Média";
+                } elseif ((int) $output['data']['prioridade'] < 60) {
+                    $output['data']['nomeprioridade'] = "Alta";
+                } elseif ((int) $output['data']['prioridade'] < 80) {
+                    $output['data']['nomeprioridade'] = "Muito Alta";
+                } else {
+                    $output['data']['nomeprioridade'] = "Urgente";
+                }
+                foreach ($output['data']['estado'] as &$estado) {
+                    $estado['data'] = new \DateTime($estado['data']);
+                    $estado['data'] = $estado['data']->format("d/m/Y H:i");
+                }
+                $output['arquivos'] = $arquivos->getData("chamado = '" . $output['data']['id'] . "'", [], ["id", "nome"]);
+                foreach ($output['arquivos'] as &$arquivo) {
+                    $arquivo['tipo'] = substr($arquivo['nome'], strrpos($arquivo['nome'], '.') + 1);
+                }
+            } else {
+                $output['error'] = "notFound";
+            }
+        } else {
+            $output['error'] = "batRequest";
+        }
 
         return $output;
     }
 
-    function listaChamados($nivel = 0, $restringirtecnico = false, $sort = "prioridade-desc", &$page = 0, &$lastpage = 0) {
+    /**
+     * Lista chamados baseado em uma série de filtros
+     * 
+     * @param int $nivel nível do estado do chamado
+     * @param boolean $restringirtecnico restringir somente para chamados disponiveis para o técnico logado
+     * @param string $filtro filtro para localização de palavras chave (seguir sintaxe MySQL)
+     * @param string $sort ordena os resuldados encontrados, deve seguir o padrão do exemplo: "coluna-oredem"
+     * @param array $tipos Lista de inteiros, que referenciam o tipo dos estados a serem buscados
+     * @return type
+     */
+    function listaChamados($nivel = 0, $restringirtecnico = false, $filtro = "", $sort = "prioridade-desc", $tipos = []) {
         $chamado = new \model\Chamado();
         $area = new \model\Area();
         $usuario = new \model\Usuario();
         $estado = new \model\Estado();
+        $problema = new \model\Problema();
 
+        $sql = "";
+
+        if (!empty($filtro)) {
+            $sql .= $filtro;
+            $sql .= " AND ";
+        }
         if ($nivel > 0) { // SELECIONA SOMENTE CHAMADOS EM QUE O ULTIMO ESTADO REPRESENTA UM ESTADO DE NIVEL $nivel E QUE PODEM SER ATENDIDAS PELO TECNICO LOGADO
-            $sql = "id IN ";
+            $sql .= "id IN ";
             $sql .= "(SELECT chamado ";
             $sql .= "FROM (select * from (select * from estado ORDER BY data DESC) es GROUP BY chamado) es "; // INVERTE A LISTA DE ESTADOS PARA O GROUP BY PEGAR A ULTIMA INSERSÃO
             $sql .= "WHERE nivel = $nivel AND (tecnico_cpf is null or tecnico_cpf = '{$_SESSION['cpf']}') ";
-            $sql .= "GROUP BY chamado) ";
+            $sql .= "GROUP BY chamado)";
 
             if ($restringirtecnico) {
-                $sql .= "AND (";
+                $sql .= " AND (";
 
                 foreach ($_SESSION['areas'] as $area) {
                     $sql .= "area = '$area' OR ";
@@ -186,21 +590,24 @@ class ChamadoController {
 
                 $sql .= ")";
             }
-        } else {
-            $sql = "";
+            $sql .= " AND ";
         }
+        if (!empty($tipos)) {
+            $sql .= "id IN ";
+            $sql .= "(SELECT chamado ";
+            $sql .= "FROM (select * from (select * from estado ORDER BY data DESC) es GROUP BY chamado) es "; // INVERTE A LISTA DE ESTADOS PARA O GROUP BY PEGAR A ULTIMA INSERSÃO
+            $sql .= "WHERE (";
+            foreach ($tipos as $tipo) {
+                $sql .= "tipo = $tipo OR ";
+            }
+            $sql = trim($sql, " OR ");
+            $sql .= ") GROUP BY chamado)";
+        }
+        $sql = trim($sql, " AND ");
 
-        if ($page > 0) {
-            $chamado->setRowsPerPage(10);
-            $chamado->setPageNo($page);
-        }
-        
         list($sortby, $sortdirection) = explode("-", $sort);
 
         $rs = $chamado->getData($sql, [$sortby => $sortdirection]);
-
-        $page = $chamado->getPageNo();
-        $lastpage = $chamado->getNoPages();
 
         $data = $rs;
 
@@ -208,6 +615,12 @@ class ChamadoController {
 
         foreach ($data as &$os) {
             $os['estados'] = $estado->getData("chamado = '" . $os['id'] . "'", ['data' => 'DESC']);
+            $os['problema'] = $problema->getData("id = '" . $os['problema'] . "'");
+            if (!empty($os['problema'])) {
+                $os['problema'] = $os['problema'][0]['problema'];
+            } else {
+                $os['problema'] = "Não informado";
+            }
 
             if (!isset($usuarios[$os['usuario_cpf']])) {
                 $usuarios[$os['usuario_cpf']] = $usuario->getData("cpf  = '" . $os['usuario_cpf'] . "'")[0]['nome'];
@@ -215,14 +628,36 @@ class ChamadoController {
             $os['usuario'] = $usuarios[$os['usuario_cpf']];
 
             if (!isset($areas[$os['area']])) {
-                $areas[$os['area']] = $area->getData("id  = '" . $os['area'] . "'")[0]['area'];
+                $rs = $area->getData("id  = '" . $os['area'] . "'");
+                $areas[$os['area']] = isset($rs[0]) ? $rs[0]['area'] : "Não informado";
             }
             $os['area'] = $areas[$os['area']];
+            $os['estados'][0]['data'] = new \DateTime($os['estados'][0]['data']);
+            $os['estados'][0]['data'] = $os['estados'][0]['data']->format("d/m/Y H:i");
+            $os['corprioridade'] = $this->corPrioridade($os['prioridade']);
+            if ((int) $os['prioridade'] < 20) {
+                $os['nomeprioridade'] = "Baixa";
+            } elseif ((int) $os['prioridade'] < 40) {
+                $os['nomeprioridade'] = "Média";
+            } elseif ((int) $os['prioridade'] < 60) {
+                $os['nomeprioridade'] = "Alta";
+            } elseif ((int) $os['prioridade'] < 80) {
+                $os['nomeprioridade'] = "Muito Alta";
+            } else {
+                $os['nomeprioridade'] = "Urgente";
+            }
         }
 
         return $data;
     }
 
+    /**
+     * Retorna lista em JSON de chamados para triagem
+     * Requer estar logado como triagem
+     * 
+     * @param array $input filtros para listagem
+     * @return array arranjo vetorial com os chamados
+     */
     function triagemupdate(&$input) {
         $output = [];
 
@@ -238,6 +673,13 @@ class ChamadoController {
         return $output;
     }
 
+    /**
+     * Retorna lista de chamados para triagem
+     * Requer estar logado como triagem
+     * 
+     * @param array $input filtros para listagem
+     * @return array arranjo vetorial com os chamados
+     */
     function triagem(&$input) {
         $output = [];
 
@@ -253,6 +695,13 @@ class ChamadoController {
         return $output;
     }
 
+    /**
+     * Retorna lista em JSON de chamados para técnico
+     * Requer estar logado como técnico
+     * 
+     * @param array $input filtros para listagem
+     * @return array arranjo vetorial com os chamados
+     */
     function tecnicoupdate(&$input) {
         $output = [];
 
@@ -268,6 +717,13 @@ class ChamadoController {
         return $output;
     }
 
+    /**
+     * Retorna lista de chamados para técnico
+     * Requer estar logado como técnico
+     * 
+     * @param array $input filtros para listagem
+     * @return array arranjo vetorial com os chamados
+     */
     function tecnico(&$input) {
         $output = [];
 
@@ -282,21 +738,67 @@ class ChamadoController {
 
         return $output;
     }
-    
+
+    /**
+     * Retorna lista em JSON de chamados para exibição geral
+     * Nenhum requisito especifico
+     * 
+     * @param array $input filtros para listagem
+     * @return array arranjo vetorial com os chamados
+     */
     function indexupdate(&$input) {
         $output = [];
-        
-        $output['data'] = $this->listaChamados(0,false,$input['post']['sort']);
-        
-        $output['md5'] = md5(serialize($output['data']));
-        
+
+        $output['pesquisa'] = isset($input['post']['pesquisa']) ? urldecode($input['post']['pesquisa']) : "";
+        $filtro = "";
+
+        if (isset($input['post']['pesquisa']) && !empty($input['post']['pesquisa'])) {
+            $filtro = "concat_ws('|',id,descricao,iporigem) LIKE '%" . mysql_escape_string($output['pesquisa']) . "%' OR "
+                    . "usuario_cpf IN (SELECT cpf FROM usuario WHERE "
+                    . "concat_ws('|',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho) LIKE '%" . mysql_escape_string($output['pesquisa']) . "%') OR "
+                    . "patrimonio IN (SELECT id FROM patrimonio WHERE "
+                    . "concat_ws('|',descricao,placa) LIKE '%" . mysql_escape_string($output['pesquisa']) . "%')";
+        }
+
+        if (isset($input['post']['tipo']) && !empty($input['post']['tipo'])) {
+            $data = $this->listaChamados(0, false, $filtro, $input['post']['sort'], $input['post']['tipo']);
+        } else {
+            $data = $this->listaChamados(0, false, $filtro, $input['post']['sort']);
+        }
+
+        $output['md5'] = md5(serialize($data));
+
+        if ($output['md5'] != $input['post']['md5']) {
+            $output['data'] = $data;
+        } else {
+            $output['data'] = [];
+        }
+
         return $output;
     }
 
+    /**
+     * Retorna lista de chamados para exibição geral
+     * Nenhum requisito especifico
+     * 
+     * @param array $input filtros para listagem
+     * @return array arranjo vetorial com os chamados
+     */
     function index(&$input) {
         $output = [];
 
-        $output['data'] = $this->listaChamados();
+        $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : "";
+        $filtro = "";
+
+        if (isset($input['args']['b']) && !empty($input['args']['b'])) {
+            $filtro = "concat_ws('|',id,descricao,iporigem) LIKE '%" . mysql_escape_string($output['pesquisa']) . "%' OR "
+                    . "usuario_cpf IN (SELECT cpf FROM usuario WHERE "
+                    . "concat_ws('|',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho) LIKE '%" . mysql_escape_string($output['pesquisa']) . "%') OR "
+                    . "patrimonio IN (SELECT id FROM patrimonio WHERE "
+                    . "concat_ws('|',descricao,placa) LIKE '%" . mysql_escape_string($output['pesquisa']) . "%')";
+        }
+
+        $output['data'] = $this->listaChamados(0, false, $filtro, "prioridade-desc", [1, 2]);
 
         $output['md5'] = md5(serialize($output['data']));
 
@@ -928,7 +1430,7 @@ class PatrimonioController {
             $patrimonio->setPageNo($page);
 
             $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : "";
-            $filtro = isset($input['args']['b']) ? "concat_ws('|',id,placa,descricao,observacoes) LIKE '%" . $output['pesquisa'] . "%' AND " : "";
+            $filtro = isset($input['args']['b']) ? "concat_ws('|',id,placa,descricao,observacoes) LIKE '%" . mysql_escape_string($output['pesquisa']) . "%' AND " : "";
 
             $rs = $patrimonio->getData($filtro . "id != 0");
 
@@ -1112,7 +1614,7 @@ class SetorController {
             $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : "";
             $output['filtro'] = isset($input['args']['f']) ? $input['args']['f'] : "";
             $filtro = "";
-            $filtro .= isset($input['args']['b']) ? "setor LIKE '%" . $output['pesquisa'] . "%'" : "";
+            $filtro .= isset($input['args']['b']) ? "setor LIKE '%" . mysql_escape_string($output['pesquisa']) . "%'" : "";
             $filtro .= isset($input['args']['b']) && isset($input['args']['f']) ? " AND " : "";
             $filtro .= isset($input['args']['f']) ? "secretaria = '" . $output['filtro'] . "'" : "";
 
@@ -1477,7 +1979,7 @@ class TecnicoController {
             $usuario->setPageNo($page);
 
             $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : "";
-            $filtro = isset($input['args']['b']) ? "AND concat_ws('|',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho,ip) LIKE '%" . $output['pesquisa'] . "%'" : "";
+            $filtro = isset($input['args']['b']) ? "AND concat_ws('|',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho,ip) LIKE '%" . mysql_escape_string($output['pesquisa']) . "%'" : "";
 
             $rs = $usuario->getData("cpf in (select cpf from tecnico) $filtro");
 
@@ -1673,7 +2175,7 @@ class SecretariaController {
             $secretaria->setPageNo($page);
 
             $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : "";
-            $filtro = isset($input['args']['b']) ? "secretaria LIKE '%" . $output['pesquisa'] . "%'" : "";
+            $filtro = isset($input['args']['b']) ? "secretaria LIKE '%" . mysql_escape_string($output['pesquisa']) . "%'" : "";
 
             $rs = $secretaria->getData($filtro);
 
@@ -1913,13 +2415,13 @@ class UsuarioController {
 
             $input['post']['base'] = "ecidade";
 
-            if ($input['post']['cgm'] === "" || $input['post']['matricula'] === "" || $input['post']['cpf'] === "") {
+            if ((empty($input['post']['cgm']) && empty($input['post']['matricula'])) || $input['post']['cpf'] === "") {
                 $output['mensagem'] = [];
                 $output['mensagem']['tipo'] = "error";
                 $output['mensagem']['icone'] = "alert";
                 $output['mensagem']['titulo'] = "Erro:";
                 $output['mensagem']['texto'] = "Matricula ou CGM devem ser preenchidos";
-            } else if (isset($input['post']['matricula'])) {
+            } else if (isset($input['post']['matricula']) && !empty($input['post']['matricula'])) {
                 if ($this->getByMatricula($input['post']['matricula']) !== null) {
                     $output['mensagem'] = [];
                     $output['mensagem']['tipo'] = "error";
@@ -1989,6 +2491,19 @@ class UsuarioController {
                     $where = "fun_cgm = '{$input['post']['cgm']}' AND fun_cpf = '{$input['post']['cpf']}'";
 
                     $rs = $ecidade->getData("public.v_funcionario", $where);
+
+                    if (!isset($rs[0])) {
+                        $where = "cgm_id = '{$input['post']['cgm']}' AND cgm_cpf = '{$input['post']['cpf']}'";
+
+                        $rs = $ecidade->getData("public.v_cgm", $where);
+                        if (isset($rs[0])) {
+                            $rs[0]['fun_cgm'] = $rs[0]['cgm_id'];
+                            $rs[0]['fun_cpf'] = $rs[0]['cgm_cpf'];
+                            $rs[0]['fun_nome'] = $rs[0]['cgm_nome'];
+                            $rs[0]['fun_email'] = $rs[0]['cgm_email'];
+                            $rs[0]['fun_cargo'] = "ESTAGIARIO";
+                        }
+                    }
                     break;
                 default :
                     $rs = [];
@@ -2064,7 +2579,7 @@ class UsuarioController {
             $usuario->setPageNo($page);
 
             $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : "";
-            $filtro = isset($input['args']['b']) ? "AND concat_ws('|',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho,ip) LIKE '%" . $output['pesquisa'] . "%'" : "";
+            $filtro = isset($input['args']['b']) ? "AND concat_ws('|',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho,ip) LIKE '%" . mysql_escape_string($output['pesquisa']) . "%'" : "";
 
             $rs = $usuario->getData("cpf not in (select cpf from tecnico) $filtro");
 

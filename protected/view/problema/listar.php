@@ -9,7 +9,7 @@
         <div class="container">
             <?php include "protected/view/header.php"; ?>
             <div id="content">
-                <div class="pagination"></div>
+                <!---<div class="pagination"></div>-->
                 <legend>Problemas de <a href="/v/modulo/listar/area/<?= $response['modulo']['area'] ?>"><?= $response['modulo']['modulo'] ?></a></legend>
                 <?php include 'protected/view/mensagem.php'; ?>
                 <?php if (!empty($response['data'])) { ?>
@@ -61,7 +61,7 @@
                 </div>
                 <a class="new-problema button"><span class="ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo Problema</a>
             </div>
-            <div class="foot-pagination"></div>
+            <!---<div class="foot-pagination"></div>-->
         </div>
         <?php include "protected/view/footer.php"; ?>
         <?php include "protected/view/footscripts.php"; ?>

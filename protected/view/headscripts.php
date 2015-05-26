@@ -7,6 +7,7 @@
 
 <!-- Le styles -->
 <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/file-icons.css" rel="stylesheet">
 <link href="/css/custom-theme/jquery-ui-1.10.0.custom.css" rel="stylesheet" />
 <link href="/assets/css/font-awesome.min.css" rel="stylesheet" />
 <link href="/css/estilo.css" rel="stylesheet">

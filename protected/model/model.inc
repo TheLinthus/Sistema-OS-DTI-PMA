@@ -43,7 +43,7 @@ class Estado extends database\DefaultTable {
         $this->dbname = 'sos';
         $this->rows_per_page = 0;
 
-        $this->fieldlist = array('id','chamado','estado','tecnico_cpf','data','tipo');
+        $this->fieldlist = array('id','chamado','estado','tecnico_cpf','data','tipo','nivel');
         $this->fieldlist['id'] = array('pkey' => 'y');
         $this->fieldlist['chamado'] = array('pkey' => 'y');
     }

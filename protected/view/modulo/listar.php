@@ -9,7 +9,7 @@
         <div class="container">
             <?php include "protected/view/header.php"; ?>
             <div id="content">
-                <div class="pagination"></div>
+                <!---<div class="pagination"></div>-->
                 <legend>Módulos de <a href="/v/area/listar"><?= $response['area']['area'] ?></a></legend>
                 <?php include 'protected/view/mensagem.php'; ?>
                 <?php if (!empty($response['data'])) { ?>
@@ -56,7 +56,7 @@
                 </div>
                 <a class="new-modulo button"><span class="ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo Módulo</a>
             </div>
-            <div class="foot-pagination"></div>
+            <!---<div class="foot-pagination"></div>-->
         </div>
         <?php include "protected/view/footer.php"; ?>
         <?php include "protected/view/footscripts.php"; ?>
