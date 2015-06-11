@@ -9,6 +9,11 @@ class DataBase {
     private $dbusername = "root";    // Usúario no servidor de BD
     private $dbuserpass = "2747";           // Senha no servidor de BD
     private $query = NULL;              // Variavel para armazenar consulta no banco
+//    private $dbconnect = NULL;          // Conexão com o banco
+//    private $dbhost = "172.17.6.3";      // Endereço do servidor de BD
+//    private $dbusername = "chamadosdti";    // Usúario no servidor de BD
+//    private $dbuserpass = "z@@m270";           // Senha no servidor de BD
+//    private $query = NULL;              // Variavel para armazenar consulta no banco
     
     /*
      *  Conecta-se com o banco de dados com os dados preenchidos

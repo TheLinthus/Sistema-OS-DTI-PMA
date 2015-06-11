@@ -178,11 +178,11 @@ class ChamadoController {
                     return $output;
                 }
 
-                $prioridade = $setor->getData("id = '" . mysql_escape_string($input['post']['setor']) . "'")[0];
+                $prioridade = $setor->getData("id = '" . mysql_escape_string($input['post']['setor']) . "'")[0]["prioridade"];
 
                 $input['post']['iporigem'] = getIP();
                 $input['post']['usuario_cpf'] = $_SESSION['cpf'];
-                $input['post']['prioridade'] = calculo($prioridade, $input['post']['prioridade']);
+                $input['post']['prioridade'] = $this->calculo($prioridade, $input['post']['prioridade']);
 
                 if (empty($input['post']['patrimonio']) || $input['post']['patrimonio'] < 0) {
                     unset($input['post']['patrimonio']);
@@ -242,18 +242,19 @@ class ChamadoController {
             $chamado = new \model\Chamado();
             $arquivos = new \model\Arquivos();
             $estado = new \model\Estado();
+            $area = new \model\Area();
 
             if (isset($input['post']['id'])) {
                 $rs = $chamado->getData("id = '{$input['post']['id']}'");
 
                 if (isset($rs[0])) {
                     $estados = $estado->getData("chamado = '" . $rs[0]['id'] . "'");
-                    
+
                     if ($rs[0]['area'] == null && (!isset($input['post']['area']) || $input['post']['id'] == "null")) {
                         $output['mensagem'] = "Não pode encaminhar sem área";
                         return $output;
                     }
-                    
+
                     // Se o estado atual do chamado é finalizado ou baixa
                     if (end($estados)['nivel'] > "2") {
                         $output['mensagem'] = "O Chamado solicitado já está finalizado";
@@ -284,8 +285,8 @@ class ChamadoController {
                     }
 
                     $chamado->updateRecord($update);
-                    
-                    $areachamado = $area->getData("id = " . $rs[0]['area'])[0]['id'];
+
+                    $areachamado = $area->getData("id = " . $rs[0]['area'])[0]['area'];
 
                     $atendendo = [];
                     $atendendo['chamado'] = $input['post']['id'];
@@ -297,14 +298,122 @@ class ChamadoController {
                         $atendendo['estado'] = "Em Análise " . $areachamado;
                         $atendendo['tecnico_cpf'] = $_SESSION['cpf'];
                         $atendendo['tipo'] = 2;
+                        $output['stay'] = true;
                     } else {
                         $atendendo['estado'] = "Encaminhado para Terceiro";
                         $atendendo['tipo'] = 5;
+                        $output['stay'] = true;
                     }
                     $atendendo['nivel'] = 2;
                     $estado->insertRecord($atendendo);
+                    
+                    $excluir = explode(",", $input["post"]["excluir"]);
+                    
+                    foreach ($excluir as $deletefile) {
+                        $arquivos->deleteRecord(['id'=>$deletefile]);
+                    }
 
-                    // FALTA MANIPULAÇÃO DE ARQUIVOS
+                    foreach ($_FILES as $uploadedfile) { // Para cada arquivo enviado junto com o chamado
+                        if ($uploadedfile['error'] == 0) { // Os 'em branco' apresentarão código de erro 4
+                            $file = [];
+                            $file['nome'] = $uploadedfile['name'];
+                            $file['arquivo'] = file_get_contents($uploadedfile['tmp_name']);
+                            $file['chamado'] = $update['id'];
+                            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                            $file['mimetype'] = finfo_file($finfo, $uploadedfile['tmp_name']);
+                            finfo_close($finfo);
+                            $arquivos->insertRecord($file);
+                        }
+                    }
+
+                    $output['ok'] = true;
+                } else {
+                    $output['error'] = "notFound";
+                }
+            } else {
+                $output['error'] = "batRequest";
+            }
+        }
+
+        return $output;
+    }
+
+    function finalizar(&$input) {
+        $output = [];
+
+        if (\Login::isLogedIn() && \Login::isDti()) {
+
+            $chamado = new \model\Chamado();
+            $arquivos = new \model\Arquivos();
+            $estado = new \model\Estado();
+
+            if (isset($input['post']['id'])) {
+                $rs = $chamado->getData("id = '{$input['post']['id']}'");
+
+                if (isset($rs[0])) {
+                    $estados = $estado->getData("chamado = '" . $rs[0]['id'] . "'");
+                    // Se o estado atual do chamado é finalizado ou baixa
+                    if (end($estados)['nivel'] > "2") {
+                        $output['mensagem'] = "O Chamado solicitado já está finalizado";
+                        return $output;
+                    }
+                    // Se o chamado está encaminhado para um terceiro
+                    if (end($estados)['nivel'] == 2 && end($estados)['tipo'] == 5) {
+                        $output['mensagem'] = "O Chamado está encaminhado para terceiro, deve voltar para 'Em atendimento'";
+                        return $output;
+                    }
+                    // Se o estado do chamado já é de em atendimento e não é o mesmo usuário que está atendendo logado
+                    if (end($estados)['tipo'] == "2" && end($estados)['tecnico_cpf'] != $_SESSION['cpf']) {
+                        $output['mensagem'] = "O Chamado solicitado já está em atendimento por outro técnico";
+                        return $output;
+                    }
+                    // Se o seu nível é diferente do estado do chamado ou o usuário logado não possui a área designada
+                    if ($_SESSION['nivel'] != 3 && end($estados)['nivel'] != $_SESSION['nivel'] || (end($estados)['nivel'] != 1 && !isset($_SESSION['areas'][$rs[0]['area']]))) {
+                        $output['mensagem'] = "O Chamado solicitado não está designado para uma área que você atende.";
+                        return $output;
+                    }
+
+                    $update = [];
+                    $update['modulo'] = $input['post']['modulo'];
+                    $update['problema'] = $input['post']['problema'];
+                    $update['prioridade'] = $input['post']['prioridade'];
+                    $update['descricao'] = $input['post']['descricao'];
+                    $update['solucao'] = $input['post']['solucao'];
+                    $update['patrimonio'] = $input['post']['patrimonio'];
+                    $update['id'] = $input['post']['id'];
+
+                    if (end($estados)['nivel'] == 1) {
+                        $update['area'] = $input['post']['area'];
+                    }
+
+                    $chamado->updateRecord($update);
+
+                    $atendendo = [];
+                    $atendendo['chamado'] = $input['post']['id'];
+                    $atendendo['estado'] = "Finalizado";
+                    $atendendo['tecnico_cpf'] = $_SESSION['cpf'];
+                    $atendendo['tipo'] = 3;
+                    $atendendo['nivel'] = 3;
+                    $estado->insertRecord($atendendo);
+
+                    $excluir = explode(",", $input["post"]["excluir"]);
+                    
+                    foreach ($excluir as $deletefile) {
+                        $arquivos->deleteRecord(['id'=>$deletefile]);
+                    }
+
+                    foreach ($_FILES as $uploadedfile) { // Para cada arquivo enviado junto com o chamado
+                        if ($uploadedfile['error'] == 0) { // Os 'em branco' apresentarão código de erro 4
+                            $file = [];
+                            $file['nome'] = $uploadedfile['name'];
+                            $file['arquivo'] = file_get_contents($uploadedfile['tmp_name']);
+                            $file['chamado'] = $update['id'];
+                            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                            $file['mimetype'] = finfo_file($finfo, $uploadedfile['tmp_name']);
+                            finfo_close($finfo);
+                            $arquivos->insertRecord($file);
+                        }
+                    }
 
                     $output['ok'] = true;
                 } else {
@@ -365,13 +474,30 @@ class ChamadoController {
 
                     $atendendo = [];
                     $atendendo['chamado'] = $input['post']['id'];
-                    $atendendo['estado'] = "Em Análise " . (end($estados)['nivel'] == 1 ? "Triagem" : $output['data']['area']['area'] );
+                    $atendendo['estado'] = "Em Análise " . (end($estados)['nivel'] == 1 ? "Triagem" : $output['data']['area']['area'] ) . " (Alteração)";
                     $atendendo['tecnico_cpf'] = $_SESSION['cpf'];
                     $atendendo['tipo'] = end($estados)['tipo'];
                     $atendendo['nivel'] = end($estados)['nivel'];
                     $estado->insertRecord($atendendo);
 
-                    // FALTA MANIPULAÇÃO DE ARQUIVOS
+                    $excluir = explode(",", $input["post"]["excluir"]);
+                    
+                    foreach ($excluir as $deletefile) {
+                        $arquivos->deleteRecord(['id'=>$deletefile]);
+                    }
+
+                    foreach ($_FILES as $uploadedfile) { // Para cada arquivo enviado junto com o chamado
+                        if ($uploadedfile['error'] == 0) { // Os 'em branco' apresentarão código de erro 4
+                            $file = [];
+                            $file['nome'] = $uploadedfile['name'];
+                            $file['arquivo'] = file_get_contents($uploadedfile['tmp_name']);
+                            $file['chamado'] = $update['id'];
+                            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                            $file['mimetype'] = finfo_file($finfo, $uploadedfile['tmp_name']);
+                            finfo_close($finfo);
+                            $arquivos->insertRecord($file);
+                        }
+                    }
 
                     $output['ok'] = true;
                 } else {

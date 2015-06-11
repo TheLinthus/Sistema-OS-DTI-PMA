@@ -154,7 +154,7 @@
                                             <label id="file-<?= $i ?>-label" for="file-<?= $i ?>" class="attachment file-<?= $response['arquivos'][$i]['tipo'] ?>"
                                                    title="<?= $response['arquivos'][$i]['nome'] ?>" tabindex="0"
                                                    data-id="<?= $response['arquivos'][$i]['id'] ?>" data-index="<?= $i ?>"></label>
-                                        <?php } else { ?>
+                                               <?php } else { ?>
                                             <label id="file-<?= $i ?>-label" for="file-<?= $i ?>" class="attachment" tabindex="0"></label>
                                         <?php } ?>
                                         <input id="file-<?= $i ?>" data-i="<?= $i ?>" name="file-<?= $i ?>" class="input-file customfile-input" type="file">
@@ -162,9 +162,20 @@
                                 </div>
                             </div>
                             <div class="control-group">
-                                <a id="save-chamado" class="button"><span class="ui-icon ui-icon-disk pull-left"></span>Salvar Alterações</a>
-                                <a id="forward-chamado" class="button"><span class="ui-icon ui-icon-seek-next pull-left"></span>Encaminhar</a>
-                                <a id="finish-chamado" class="button"><span class="ui-icon ui-icon-check pull-left"></span>Finalizar Chamado</a>
+                                <a id="save-chamado" class="button">
+                                    <span class="ui-icon ui-icon-disk pull-left"></span>
+                                    Salvar Alterações
+                                </a>
+                                <a id="forward-chamado" class="button">
+                                    <span class="ui-icon ui-icon-seek-next pull-left"></span>
+                                    <?= end($response['data']['estado'])['tipo'] == 5 ? "Atender" : "Encaminhar" ?>
+                                </a>
+                                <?php if (end($response['data']['estado'])['tipo'] != 5) { ?>
+                                    <a id="finish-chamado" class="button">
+                                        <span class="ui-icon ui-icon-check pull-left"></span>
+                                        Finalizar Chamado
+                                    </a>
+                                <?php } ?>
                             </div>
                         <?php } ?>
                     </fieldset>

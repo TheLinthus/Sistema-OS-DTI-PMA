@@ -90,7 +90,7 @@ $("#patrimonio-btn").click(function (e) {
 
 function loadForm() {
     var data = new FormData();
-    data.append("id", id)
+    data.append("id", id);
     data.append("area", area);
     data.append("modulo", modulo);
     data.append("problema", problema);
@@ -120,6 +120,8 @@ $("#save-chamado").click(function () {
         success: function (data) {
             if (data.ok) {
                 alert("Salvo com sucesso");
+                $(".input-file").val("");
+                location.reload();
             } else {
                 alert(data.mensagem);
             }
@@ -137,16 +139,22 @@ $("#forward-chamado").click(function () {
         $("#area").focus().parent().effect("bounce");
     } else {
         $("#atender-chamado fieldset").loading();
-        data = loadForm();
+        var data = loadForm();
         $.ajax({
             type: "POST",
             url: "/v/chamado/encaminhar",
+            processData: false,
+            contentType: false,
             data: data,
             dataType: "json",
             success: function (data) {
                 if (data.ok) {
-                    alert("Encaminhado para a àrea designada!");
-                    window.close();
+                    if (data.stay) {
+                        location.reload();
+                    } else {
+                        alert("Encaminhado para a àrea designada!");
+                        window.close();
+                    }
                 } else {
                     alert(data.mensagem);
                 }
@@ -160,7 +168,7 @@ $("#forward-chamado").click(function () {
 });
 
 $("#finish-chamado").click(function () {
-    if (!$("#solucao").html()) {
+    if (!$("#solucao").val()) {
         alert("Você deve preencher a solução do chamado!");
         $("#solucao").focus().parent().effect("bounce");
     } else if (confirm("Você realmente deseja finalizar o chamado? Operação não pode ser desfeita!")) {
@@ -169,6 +177,8 @@ $("#finish-chamado").click(function () {
         $.ajax({
             type: "POST",
             url: "/v/chamado/finalizar",
+            processData: false,
+            contentType: false,
             data: data,
             dataType: "json",
             success: function (data) {
