@@ -2,7 +2,7 @@
 <html lang="pt">
     <head>
         <?php include "protected/view/headscripts.php"; ?>
-        <title>Chamado <?= $response['data']['id'] ?></title>
+        <title>Chamado <?= $input['args']['id'] ?></title>
     </head>
     <body>
         <?php include "protected/view/nav.php"; ?>

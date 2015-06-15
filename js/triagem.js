@@ -8,7 +8,7 @@ $(document).ready(function () {
         if (!janela) {
             alert("Janela bloquada, habilite popups neste site em seu navegador!");
         }
-    }
+    };
 
     function verifyTriagem() {
         if (!trying) {

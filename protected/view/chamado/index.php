@@ -80,8 +80,8 @@
                                         <span class="ui-icon" style="background: <?= $chamado['corprioridade'] ?>"></span>
                                         <?= $chamado['nomeprioridade'] ?>
                                     </td>
-                                    <td class="span4 more-info" title="<?= $chamado['descricao'] ?> (<?= $chamado['problema'] ?>)"><?= $chamado['descricao'] ?> (<?= $chamado['problema'] ?>)</td>
-                                    <td class="span3 more-info" data-tipo="<?= $chamado['estados'][0]['tipo'] ?>" title="<?= $chamado['estados'][0]['estado'] ?>">
+                                    <td class="span3 more-info" title="<?= $chamado['descricao'] ?> (<?= $chamado['problema'] ?>)"><?= $chamado['descricao'] ?> (<?= $chamado['problema'] ?>)</td>
+                                    <td class="span5 more-info" data-tipo="<?= $chamado['estados'][0]['tipo'] ?>" title="<?= $chamado['estados'][0]['estado'] ?>">
                                         <span class="ui-icon estado-<?= $chamado['estados'][0]['tipo'] ?>" title="<?= $chamado['estados'][0]['estado'] ?>"></span>
                                         <?= $chamado['estados'][0]['estado'] ?>
                                     </td>

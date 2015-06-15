@@ -22,7 +22,7 @@ class Chamado extends database\DefaultTable {
         $this->dbname = 'sos';
         $this->rows_per_page = 0;
 
-        $this->fieldlist = array('id','area','modulo','problema','descricao','patrimonio','secretaria','setor','prioridade','iporigem','usuario_cpf');
+        $this->fieldlist = array('id','area','modulo','problema','descricao','patrimonio','secretaria','setor','prioridade','iporigem','usuario_cpf','solucao');
         $this->fieldlist['id'] = array('pkey' => 'y');
     }
 }

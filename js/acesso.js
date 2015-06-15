@@ -192,7 +192,7 @@ $(document).ready(function () {
     $("#form-acesso-usuario").submit(function (event) {
         if (!validCGM && !validMatricula) {
             event.preventDefault();
-            $("#acesso_dialog").html("<p>Não foi possivel validar CGM ou Matricula com o CPF informado</p>");
+            $("#acesso_dialog").html("<p>Não foi possivel validar CGM ou Matricula com o CPF informado.</p><p>Certifique-se que está cadastrado ou clique no botão Cadastrar</p>");
             $("#acesso_dialog").dialog('open');
         }
     });

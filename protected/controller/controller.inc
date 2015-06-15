@@ -292,7 +292,6 @@ class ChamadoController {
                     $atendendo['chamado'] = $input['post']['id'];
                     if (end($estados)['nivel'] == 1) {
                         $atendendo['estado'] = "Encaminhado para Técnico (" . $areachamado . ")";
-                        $atendendo['tecnico_cpf'] = $_SESSION['cpf'];
                         $atendendo['tipo'] = 1;
                     } elseif (end($estados)['nivel'] == 2 && end($estados)['tipo'] == 5) {
                         $atendendo['estado'] = "Em Análise " . $areachamado;
@@ -433,6 +432,7 @@ class ChamadoController {
         if (\Login::isLogedIn() && \Login::isDti()) {
 
             $chamado = new \model\Chamado();
+            $area = new \model\Area();
             $arquivos = new \model\Arquivos();
             $estado = new \model\Estado();
 
@@ -468,13 +468,17 @@ class ChamadoController {
 
                     if (end($estados)['nivel'] == 1) {
                         $update['area'] = $input['post']['area'];
+                    } else {
+                        $input['post']['area'] = $rs[0]['area'];
                     }
 
                     $chamado->updateRecord($update);
+                    
+                    $areachamado = $area->getData("id = " . $input['post']['area'])[0]['area'];
 
                     $atendendo = [];
                     $atendendo['chamado'] = $input['post']['id'];
-                    $atendendo['estado'] = "Em Análise " . (end($estados)['nivel'] == 1 ? "Triagem" : $output['data']['area']['area'] ) . " (Alteração)";
+                    $atendendo['estado'] = "Em Análise " . (end($estados)['nivel'] == 1 ? "Triagem" : $areachamado ) . " (Alteração)";
                     $atendendo['tecnico_cpf'] = $_SESSION['cpf'];
                     $atendendo['tipo'] = end($estados)['tipo'];
                     $atendendo['nivel'] = end($estados)['nivel'];
@@ -536,7 +540,7 @@ class ChamadoController {
             if (isset($input['args']['id'])) {
                 $rs = $chamado->getData("id = '{$input['args']['id']}'");
 
-                if (isset($rs[0])) {
+                if (isset($rs[0])) {                    
                     $estados = $estado->getData("chamado = '" . $rs[0]['id'] . "'");
                     // Se o estado atual do chamado é finalizado ou baixa
                     if (end($estados)['nivel'] > "2") {
@@ -641,7 +645,7 @@ class ChamadoController {
                 $output['data']['area'] = $output['data']['area'] != null ? $area->getData("id = '" . $output['data']['area'] . "'")[0]['area'] : "Não Informado";
                 $output['data']['modulo'] = $output['data']['modulo'] != null ? $modulo->getData("id = '" . $output['data']['modulo'] . "'")[0]['modulo'] : "Não Informado";
                 $output['data']['problema'] = $output['data']['problema'] != null ? $problema->getData("id = '" . $output['data']['problema'] . "'")[0]['problema'] : "Não Informado";
-                $output['data']['patrimonio'] = $output['data']['patrimonio'] != null ? $patrimonio->getData("id = '" . $output['data']['patrimonio'] . "'")[0]['patrimonio'] : "Não Informado";
+                $output['data']['patrimonio'] = $output['data']['patrimonio'] != null ? $patrimonio->getData("id = '" . $output['data']['patrimonio'] . "'")[0]['descricao'] : "Não Informado";
                 $output['data']['secretaria'] = $secretaria->getData("id = '" . $output['data']['secretaria'] . "'")[0]['secretaria'];
                 $output['data']['setor'] = $setor->getData("id = '" . $output['data']['setor'] . "'")[0]['setor'];
                 $output['data']['usuario'] = $usuario->getData("cpf = '" . $output['data']['usuario_cpf'] . "'")[0];
@@ -2165,7 +2169,7 @@ class TecnicoController {
 
         if (\Login::isLogedIn() && \Login::isDti()) {
             if (isset($input['post']['antiga']) && isset($input['post']['nova1']) && isset($input['post']['nova2'])) {
-                if ($input['post']['nova1'] !== $input['post']['antiga']) {
+                if ($input['post']['nova1'] === $input['post']['antiga']) {
                     $output['mensagem'] = [];
                     $output['mensagem']['tipo'] = "error";
                     $output['mensagem']['icone'] = "alert";
@@ -2455,7 +2459,7 @@ class UsuarioController {
             if (isset($rs[0])) {
                 \Login::loginUsuario($rs[0]);
 
-                $output['redirect'] = "/";
+                $output['redirect'] = "/v/chamados/historico";
             } else {
                 $output['mensagem'] = [];
                 $output['mensagem']['tipo'] = "error";
