@@ -37,11 +37,14 @@ function corPrioridade(v) {
     var R = ("0" + r.toString(16)).substr(-2);
     var G = ("0" + g.toString(16)).substr(-2);
     var B = ("0" + b.toString(16)).substr(-2);
-    return "#"+R+G+B;
+    return "#" + R + G + B;
 }
 
 function updateTable(data) {
     $(".chamado-row").addClass("updating");
+    if (data.debug) {
+        console.log(data.debug);
+    }
     $.each(data.data, function (i, v) {
         var cham;
         var desc = v.descricao + " (" + v.problema + ")";
@@ -92,14 +95,14 @@ function updateTable(data) {
             cham.data("descricao", desc);
             cham.attr("tabindex", 0);
             cham.append($("<td>").addClass("span1").html(v.id));
-            cham.append($("<td>").addClass("span3").addClass("more-info").attr("title", v.estados[0].data).html(v.estados[0].data).tooltip());
+            cham.append($("<td>").addClass("span1").addClass("more-info").attr("title", v.estados[0].data).html(v.estados[0].data).tooltip());
             cham.append($("<td>").addClass("more-info").attr("title", v.usuario).html(v.usuario).tooltip());
             cham.append($("<td>").addClass("span1").html(v.area));
             var icon = $("<span>").addClass("ui-icon").css("background", v.corprioridade);
             cham.append($("<td>").addClass("span1").html(v.nomeprioridade).prepend(icon));
-            cham.append($("<td>").addClass("span4").addClass("more-info").html(desc).attr("title", desc).tooltip());
+            cham.append($("<td>").addClass("span3").addClass("more-info").html(desc).attr("title", desc).tooltip());
             icon = $("<span>").addClass("ui-icon").addClass("estado-" + v.estados[0].tipo).attr("title", v.estados[0].estado);
-            cham.append($("<td>").addClass("span3").addClass("more-info").attr("title", v.estados[0].estado).html(v.estados[0].estado).tooltip().prepend(icon));
+            cham.append($("<td>").addClass("span5").addClass("more-info").attr("title", v.estados[0].estado).html(v.estados[0].estado).tooltip().prepend(icon));
             cham.holdToClick(400, clickChamado);
             cham.find("td").effect("highlight", 3000);
         }
@@ -439,11 +442,33 @@ $(document).ready(function () {
         $(".buscar-bt").click();
     });
 
+    $.validator.addMethod("greaterThanPrevious", function (value, element) {
+        var prev = $(element).prevAll("input");
+        return prev.valid() && prev.val() <= $(element).val();
+    }, "Datas devem ser validas no formato dia/mês/ano e segunda data deve ser maior que a anterior");
+
+    $("#filtros").validate({
+        rules: {
+            dataA: {
+                date: true
+            },
+            dataB: {
+                date: true,
+                greaterThanPrevious: true
+            }
+        },
+        onsubmit: false
+    });
+
     $(".ui-icon, .more-info").tooltip();
 
     //$(".item").titlecase();
 
     $("textarea").autogrow();
+    $("textarea:disabled").each(function (i, e) {
+        var s = $(e)[0].scrollHeight;
+        $(e).animate({height: s});
+    });
 
     $(".attachment").button();
 }

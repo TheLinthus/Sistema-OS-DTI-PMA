@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>Abrir Chamado</title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <form action="/v/chamado/confirmar" id="form-abrir-chamado" method="POST" enctype="multipart/form-data" class="form-horizontal">
                     <div id="step-box" class="etapa1">
@@ -15,12 +15,12 @@
                             <legend>Abrir Chamado - Selecionar Secretaria</legend>
                             <div class="flex-container">
                                 <div class="flex-grid">
-                                    <input id="secretaria" type="hidden" name="secretaria" value="<?= $response['sec'] ?>">
+                                    <input id="secretaria" type="hidden" name="secretaria" value="<?php echo $response['sec']; ?>">
                                     <?php foreach ($response['secretarias'] as $secretaria) { ?>
-                                        <a class="item secretaria next-step <?= $response['sec'] == $secretaria['id'] ? "active" : "" ?>"
-                                           data-id="<?= $secretaria['id'] ?>"
-                                           href="/v/chamado/cadastro/sec/<?= $secretaria['id'] ?>">
-                                               <?= $secretaria['secretaria'] ?>
+                                        <a class="item secretaria next-step <?php echo $response['sec'] == $secretaria['id'] ? 'active' : ''; ?>"
+                                           data-id="<?php echo $secretaria['id']; ?>"
+                                           href="/v/chamado/cadastro/sec/<?php echo $secretaria['id']; ?>">
+                                               <?php echo $secretaria['secretaria']; ?>
                                         </a>
                                     <?php } ?>
                                     <!-- Os div's seguintes são para ajustar tamanho dos últimos itens do flex-grid -->
@@ -52,17 +52,17 @@
                                 </div>
                             </footer>
                         </fieldset>
-                        <fieldset id="step-2" data-etapa="2" class="step <?= $response['etapa'] < 2 ? "hide" : "active"; ?>">
+                        <fieldset id="step-2" data-etapa="2" class="step <?php echo $response['etapa'] < 2 ? 'hide' : 'active'; ?>">
                             <legend>Abrir Chamado - Selecionar Setor</legend>
                             <div class="flex-container">
                                 <div class="flex-grid">
-                                    <input id="setor" type="hidden" name="setor" value="<?= $response['set'] ?>">
+                                    <input id="setor" type="hidden" name="setor" value="<?php echo $response['set']; ?>">
                                     <?php foreach ($response['setores'] as $setor) { ?>
-                                        <a class="item setor next-step <?= $response['set'] == $setor['id'] ? "active" : "" ?>"
-                                           data-id="<?= $setor['id'] ?>"
-                                           data-secretaria="<?= $setor['secretaria'] ?>"
-                                           href="/v/chamado/cadastro/sec/<?= $setor['secretaria'] ?>/set/<?= $setor['id'] ?>">
-                                               <?= $setor['setor'] ?>
+                                        <a class="item setor next-step <?php echo $response['set'] == $setor['id'] ? 'active' : ''; ?>"
+                                           data-id="<?php echo $setor['id']; ?>"
+                                           data-secretaria="<?php echo $setor['secretaria']; ?>"
+                                           href="/v/chamado/cadastro/sec/<?php echo $setor['secretaria']; ?>/set/<?php echo $setor['id']; ?>">
+                                               <?php echo $setor['setor']; ?>
                                         </a>
                                     <?php } ?>
                                     <!-- Os div's seguintes são para ajustar tamanho dos últimos itens do flex-grid -->
@@ -95,7 +95,7 @@
                                 </div>
                             </footer>
                         </fieldset>
-                        <fieldset id="step-3" data-etapa="3" class="step <?= $response['etapa'] < 3 ? "hide" : "active"; ?>">
+                        <fieldset id="step-3" data-etapa="3" class="step <?php echo $response['etapa'] < 3 ? 'hide' : 'active'; ?>">
                             <legend>Abrir Chamado - Preencha o formulário</legend>
                             <div class="flex-container">
                                 <div class="control-group">
@@ -103,24 +103,24 @@
                                     <div class="controls">
                                         <span id="areas">
                                             <?php foreach ($response['areas'] as $area) { ?>
-                                                <?php if ($area['nivel'] == 2) { // Exibe apenas áreas de nível 2  ?>
+                                                <?php if ($area['nivel'] == 2) { ?>
                                                     <input 
-                                                        type="radio" id="area-<?= $area['id'] ?>"
-                                                        value="<?= $area['id'] ?>" name="area"
-                                                        <?= $response['area'] == $area['id'] ? "checked" : "" ?>
+                                                        type="radio" id="area-<?php echo $area['id']; ?>"
+                                                        value="<?php echo $area['id']; ?>" name="area"
+                                                        <?php echo $response['area'] == $area['id'] ? 'checked' : ''; ?>
                                                         class="ui-helper-hidden-accessible"/>
-                                                    <label for="area-<?= $area['id'] ?>">
+                                                    <label for="area-<?php echo $area['id']; ?>">
                                                         <a 
-                                                            data-id="<?= $area['id'] ?>"
-                                                            href="/v/chamado/cadastro/sec/<?= $response['sec'] ?>/set/<?= $response['set'] ?>/area/<?= $area['id'] ?>">
-                                                                <?= $area['area'] ?>
+                                                            data-id="<?php echo $area['id']; ?>"
+                                                            href="/v/chamado/cadastro/sec/<?php echo $response['sec']; ?>/set/<?php echo $response['set']; ?>/area/<?php echo $area['id']; ?>">
+                                                                <?php echo $area['area']; ?>
                                                         </a>
                                                     </label>
                                                 <?php } ?>
                                             <?php } ?>
                                             <input
                                                 type="radio" id="unknow-area" value="-1"
-                                                name="area" <?= $response['area'] == -1 ? "checked" : "" ?>
+                                                name="area" <?php echo $response['area'] == -1 ? 'checked' : ''; ?>
                                                 class="ui-helper-hidden-accessible"/>
                                             <label for="unknow-area" style="display: none;">
                                                 Não informar
@@ -131,29 +131,29 @@
                                 </div>
                                 <div id="modulo-control"
                                      class="control-group"
-                                     <?= $response['area'] < 0 ? "style='display: none;'" : "" ?>>
+                                     <?php echo $response['area'] < 0 ? 'style=\'display: none;\'' : ''; ?>>
                                     <label class="control-label" for="modulo">Modulo</label>
                                     <div class="controls">
                                         <span id="modulos">
                                             <?php foreach ($response['modulos'] as $modulo) { ?>
                                                 <input 
-                                                    type="radio" id="modulo-<?= $modulo['id'] ?>"
-                                                    value="<?= $modulo['id'] ?>" name="modulo"
-                                                    <?= $response['mod'] == $modulo['id'] ? "checked" : "" ?>
-                                                    class="ui-helper-hidden-accessible" data-area="<?= $modulo['area'] ?>"
-                                                    <?= $modulo['area'] != $response['area'] ? "style='display: none;'" : "" ?>/>
-                                                <label for="modulo-<?= $modulo['id'] ?>" data-area="<?= $modulo['area'] ?>"
-                                                       <?= $modulo['area'] != $response['area'] ? "style='display: none;'" : "" ?>>
+                                                    type="radio" id="modulo-<?php echo $modulo['id']; ?>"
+                                                    value="<?php echo $modulo['id']; ?>" name="modulo"
+                                                    <?php echo $response['mod'] == $modulo['id'] ? 'checked' : ''; ?>
+                                                    class="ui-helper-hidden-accessible" data-area="<?php echo $modulo['area']; ?>"
+                                                    <?php echo $modulo['area'] != $response['area'] ? 'style=\'display: none;\'' : ''; ?>/>
+                                                <label for="modulo-<?php echo $modulo['id']; ?>" data-area="<?php echo $modulo['area']; ?>"
+                                                       <?php echo $modulo['area'] != $response['area'] ? 'style=\'display: none;\'' : ''; ?>>
                                                     <a 
-                                                        data-id="<?= $modulo['id'] ?>"
-                                                        href="/v/chamado/cadastro/sec/<?= $response['sec'] ?>/set/<?= $response['set'] ?>/area/<?= $modulo['area'] ?>/prob/<?= $modulo['id'] ?>">
-                                                            <?= $modulo['modulo'] ?>
+                                                        data-id="<?php echo $modulo['id']; ?>"
+                                                        href="/v/chamado/cadastro/sec/<?php echo $response['sec']; ?>/set/<?php echo $response['set']; ?>/area/<?php echo $modulo['area']; ?>/prob/<?php echo $modulo['id']; ?>">
+                                                            <?php echo $modulo['modulo']; ?>
                                                     </a>
                                                 </label>
                                             <?php } ?>
                                             <input
                                                 type="radio" id="unknow-modulo" value="-1"
-                                                name="modulo" <?= $response['mod'] == -1 ? "checked" : "" ?>
+                                                name="modulo" <?php echo $response['mod'] == -1 ? 'checked' : ''; ?>
                                                 class="ui-helper-hidden-accessible"/>
                                             <label for="unknow-modulo" style="display: none;">
                                                 Não informar
@@ -164,34 +164,34 @@
                                 </div>
                                 <div id="problema-control"
                                      class="control-group"
-                                     <?= $response['mod'] < 0 ? "style='display: none;'" : "" ?>>
+                                     <?php echo $response['mod'] < 0 ? 'style=\'display: none;\'' : ''; ?>>
                                     <label class="control-label" for="problema">Problema</label>
                                     <div class="controls">
                                         <span id="problemas">
                                             <?php foreach ($response['problemas'] as $problema) { ?>
                                                 <input 
-                                                    type="radio" id="problema-<?= $problema['id'] ?>"
-                                                    value="<?= $problema['id'] ?>" name="problema"
-                                                    <?= $response['problema'] == $problema['id'] ? "checked" : "" ?>
-                                                    class="ui-helper-hidden-accessible" data-modulo="<?= $problema['modulo'] ?>"
-                                                    <?= $problema['modulo'] != $response['mod'] ? "style='display: none;'" : "" ?>
-                                                    title="<?= $problema['problema'] ?>" data-dica="<?= $problema['dica'] ?>"/>
-                                                <label for="problema-<?= $problema['id'] ?>" data-modulo="<?= $problema['modulo'] ?>"
-                                                       title="<?= $problema['dica'] ?>"
-                                                       <?= $problema['modulo'] != $response['mod'] ? "style='display: none;'" : "" ?>>
+                                                    type="radio" id="problema-<?php echo $problema['id']; ?>"
+                                                    value="<?php echo $problema['id']; ?>" name="problema"
+                                                    <?php echo $response['problema'] == $problema['id'] ? 'checked' : ''; ?>
+                                                    class="ui-helper-hidden-accessible" data-modulo="<?php echo $problema['modulo']; ?>"
+                                                    <?php echo $problema['modulo'] != $response['mod'] ? 'style=\'display: none;\'' : ''; ?>
+                                                    title="<?php echo $problema['problema']; ?>" data-dica="<?php echo $problema['dica']; ?>"/>
+                                                <label for="problema-<?php echo $problema['id']; ?>" data-modulo="<?php echo $problema['modulo']; ?>"
+                                                       title="<?php echo $problema['dica']; ?>"
+                                                       <?php echo $problema['modulo'] != $response['mod'] ? 'style=\'display: none;\'' : ''; ?>>
                                                            <?php if (!empty($problema['dica'])) { ?>
                                                         <span class="ui-icon ui-icon-lightbulb pull-left"></span>
                                                     <?php } ?>
                                                     <a 
-                                                        data-id="<?= $problema['id'] ?>"
-                                                        href="/v/chamado/cadastro/sec/<?= $response['sec'] ?>/set/<?= $response['set'] ?>/area/<?= $response['area'] ?>/mod/<?= $problema['mod'] ?>/prob/<?= $problema['id'] ?>">
-                                                            <?= $problema['problema'] ?>
+                                                        data-id="<?php echo $problema['id']; ?>"
+                                                        href="/v/chamado/cadastro/sec/<?php echo $response['sec']; ?>/set/<?php echo $response['set']; ?>/area/<?php echo $response['area']; ?>/mod/<?php echo $problema['mod']; ?>/prob/<?php echo $problema['id']; ?>">
+                                                            <?php echo $problema['problema']; ?>
                                                     </a>
                                                 </label>
                                             <?php } ?>
                                             <input
                                                 type="radio" id="unknow-problema" value="-1"
-                                                name="problema" <?= $response['problema'] == -1 ? "checked" : "" ?>
+                                                name="problema" <?php echo $response['problema'] == -1 ? 'checked' : ''; ?>
                                                 class="ui-helper-hidden-accessible"/>
                                             <label for="unknow-problema" style="display: none;">
                                                 Outro
@@ -302,8 +302,8 @@
                 </form>
             </div>
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
         <script src="/js/abrirchamado.js"></script>
     </body>
-</html>
+</html><?php 

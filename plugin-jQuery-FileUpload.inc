@@ -1,4 +1,4 @@
-<span class="bt">
+<?php  ?><span class="bt">
     <span>Adicionar Imagens</span>
     <input id="fileupload" type="file" name="files[]" data-url="/fileUpload.php" accept="image/*" multiple>
 </span>
@@ -107,3 +107,4 @@
         });
     });
 </script>
+<?php 

@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>Acesso de Técnico</title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <form action="/v/tecnico/acesso" id="form-acesso-tecnico" data-base="local" method="POST" class="form-horizontal vertical-center center">
                     <fieldset>
@@ -39,9 +39,9 @@
                 </form>
             </div>
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
         <script src="/js/acesso.js"></script>
         <div id="acesso_dialog" class="ui-dialog-content ui-widget-content" style="width: auto; min-height: 19px; max-height: none; height: auto;"></div>
     </body>
-</html>
+</html><?php 

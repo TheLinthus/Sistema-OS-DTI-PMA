@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>500 Erro Interno no Servidor</title>
     </head>
     <body class="alert-error">
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <div class="vertical-center pagination-centered">
                     <div class="container">
@@ -17,8 +17,8 @@
                                 <p>
                                     <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
                                     <strong>Erro:</strong> Ocorreu um erro interno no servidor, por favor tente novamente ou contate o DTI.
-                                    <?php if (isset($error) && $error !== "") { ?>
-                                        <br><?= $error ?>
+                                    <?php if (isset($error) && $error !== '') { ?>
+                                        <br><?php echo $error; ?>
                                     <?php } ?>
                                 </p>
                             </div>
@@ -30,7 +30,6 @@
                 </div>
             </div>
         </div>
-        <?php include "protected/view/footer.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
     </body>
-    <?php include "protected/view/footscripts.php"; ?>
-</html>
+    <?php include 'protected/view/footscripts.php'; ?></html><?php 

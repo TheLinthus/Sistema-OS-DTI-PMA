@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
-        <title>Listagem de Módulos de <?= $response['area']['area'] ?></title>
+        <?php include 'protected/view/headscripts.php'; ?>
+        <title>Listagem de Módulos de <?php echo $response['area']['area']; ?></title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
-                <legend>Módulos de <a href="/v/area/listar"><?= $response['area']['area'] ?></a></legend>
+                <legend>Módulos de <a href="/v/area/listar"><?php echo $response['area']['area']; ?></a></legend>
                 <?php include 'protected/view/mensagem.php'; ?>
                 <?php if (!empty($response['data'])) { ?>
                     <div class="table-responsive">
@@ -25,18 +25,18 @@
                             <tbody>
                                 <?php foreach ($response['data'] as $modulo) { ?>
                                     <tr>
-                                        <td><?= $modulo['id'] ?></td>
-                                        <td><?= $modulo['modulo'] ?></td>
+                                        <td><?php echo $modulo['id']; ?></td>
+                                        <td><?php echo $modulo['modulo']; ?></td>
                                         <td class="span1">
-                                            <a href="/v/modulo/remove/id/<?= $modulo['id'] ?>" class="ui-icon ui-icon-trash"
+                                            <a href="/v/modulo/remove/id/<?php echo $modulo['id']; ?>" class="ui-icon ui-icon-trash"
                                                onclick="return confirm('Você realmente quer remover esse modulo?')"
                                                title="Remover">Remover</a>
                                         </td>
                                         <td class="span1">
-                                            <a href="#" data-id="<?= $modulo['id'] ?>" data-nome="<?= $modulo['modulo'] ?>" data-area="<?= $modulo['area'] ?>" class="ren-modulo ui-icon ui-icon-pencil" title="Renomear Módulo">Alterar</a>
+                                            <a href="#" data-id="<?php echo $modulo['id']; ?>" data-nome="<?php echo $modulo['modulo']; ?>" data-area="<?php echo $modulo['area']; ?>" class="ren-modulo ui-icon ui-icon-pencil" title="Renomear Módulo">Alterar</a>
                                         </td>
                                         <td class="span1">
-                                            <a href="/v/problema/listar/modulo/<?= $modulo['id'] ?>" data-id="<?= $modulo['id'] ?>" class="ui-icon ui-icon-folder-open" title="Cadastrar e Editar Problemas">Cadastrar Problemas</a>
+                                            <a href="/v/problema/listar/modulo/<?php echo $modulo['id']; ?>" data-id="<?php echo $modulo['id']; ?>" class="ui-icon ui-icon-folder-open" title="Cadastrar e Editar Problemas">Cadastrar Problemas</a>
                                         </td>
                                     </tr>
                                 <?php } ?>
@@ -47,7 +47,7 @@
                 <div id="modulo-dialog" title="Módulo">
                     <div class="control-group">
                         <input id="modulo-id" name="modulo-id" type="hidden" class="input-large">
-                        <input id="modulo-area" name="modulo-area" type="hidden" value="<?= $response['area']['id'] ?>" class="input-large">
+                        <input id="modulo-area" name="modulo-area" type="hidden" value="<?php echo $response['area']['id']; ?>" class="input-large">
                         <label class="control-label" for="modulo-nome">Nome do Módulo</label>
                         <div class="controls">
                             <input id="modulo-nome" name="modulo-nome" type="text" placeholder="nome" class="input-large">
@@ -58,8 +58,8 @@
             </div>
             <!---<div class="foot-pagination"></div>-->
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
         <script src="/js/moduloslista.js"></script>
     </body>
-</html>
+</html><?php 

@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>Site em construção</title>
     </head>
     <body class="alert-working">
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <div class="vertical-center pagination-centered">
                     <div class="container">
@@ -20,12 +20,11 @@
                                     Site está em construção, por favor utilize somente as funções implementadas (Encontradas na barra de navegação superior)
                                 </p>
                             </div>
-                            <?php include "protected/view/tecnologia.php"; ?>
+                            <?php include 'protected/view/tecnologia.php'; ?>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </body>
-    <?php include "protected/view/footscripts.php"; ?>
-</html>
+    <?php include 'protected/view/footscripts.php'; ?></html><?php 

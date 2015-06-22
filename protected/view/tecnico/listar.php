@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
-        <title>Listagem de Técnicos (<?= empty($response['data']) ? "Vazio" : $response['pageno'] . "/" . $response['lastpage'] ?>)</title>
+        <?php include 'protected/view/headscripts.php'; ?>
+        <title>Listagem de Técnicos (<?php echo empty($response['data']) ? 'Vazio' : $response['pageno'] . '/' . $response['lastpage']; ?>)</title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
                 <legend>Técnicos</legend>
@@ -16,8 +16,8 @@
                     <div class="controls">
                         <div class="input-append">
                             <input id="pesquisa" name="pesquisa" class="input-xxlarge" placeholder="palavras chave"
-                            <?= isset($response['pesquisa']) ? "autofocus" : "" ?>
-                                   value="<?= isset($response['pesquisa']) ? $response['pesquisa'] : "" ?>" type="text">
+                            <?php echo isset($response['pesquisa']) ? 'autofocus' : ''; ?>
+                                   value="<?php echo isset($response['pesquisa']) ? $response['pesquisa'] : ''; ?>" type="text">
                             <div class="btn-group">
                                 <button class="btn buscar-bt" data-mod="tecnico">
                                     Pesquisar
@@ -43,23 +43,23 @@
                             <tbody>
                                 <?php foreach ($response['data'] as $usuario) { ?>
                                     <tr>
-                                        <td><?= $usuario['cpf'] ?></td>
-                                        <td class="more-info" title="<?= $usuario['nome'] ?>"><?= $usuario['nome'] ?></td>
-                                        <td><?= $usuario['matricula'] ?></td>
-                                        <td><?= $usuario['cgm'] ?></td>
-                                        <td><?= $usuario['email'] ?></td>
+                                        <td><?php echo $usuario['cpf']; ?></td>
+                                        <td class="more-info" title="<?php echo $usuario['nome']; ?>"><?php echo $usuario['nome']; ?></td>
+                                        <td><?php echo $usuario['matricula']; ?></td>
+                                        <td><?php echo $usuario['cgm']; ?></td>
+                                        <td><?php echo $usuario['email']; ?></td>
                                         <td class="span1">
-                                            <a href="/v/tecnico/info/cpf/<?= $usuario['cpf'] ?>"class="ui-icon ui-icon-contact" title="Detalhes">Exibir Dados do Usuário (Detalhes)</a>
+                                            <a href="/v/tecnico/info/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-contact" title="Detalhes">Exibir Dados do Usuário (Detalhes)</a>
                                         </td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/tecnico/remove/cpf/<?= $usuario['cpf'] ?>"class="ui-icon ui-icon-closethick" onclick="return confirm('Você realmente quer transoformar esse técnico em um usuário normal?')" title="Remover Privilégios de Técnico (Mudar para Usuário Comum)">Remover Privilégios de Técnico</a>
+                                                <a href="/v/tecnico/remove/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-closethick" onclick="return confirm('Você realmente quer transoformar esse técnico em um usuário normal?')" title="Remover Privilégios de Técnico (Mudar para Usuário Comum)">Remover Privilégios de Técnico</a>
                                             </td>
                                             <td class="span1">
-                                                <a href="/v/usuario/alterar/cpf/<?= $usuario['cpf'] ?>"class="ui-icon ui-icon-pencil" title="Alterar dados do Usuário">Alterar</a>
+                                                <a href="/v/usuario/alterar/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-pencil" title="Alterar dados do Usuário">Alterar</a>
                                             </td>
                                             <td class="span1">
-                                                <a href="/v/tecnico/areas/cpf/<?= $usuario['cpf'] ?>"class="ui-icon ui-icon-transferthick-e-w" title="Alterar Áreas do Técnico">Áreas</a>
+                                                <a href="/v/tecnico/areas/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-transferthick-e-w" title="Alterar Áreas do Técnico">Áreas</a>
                                             </td>
                                         <?php } ?>
                                     </tr>
@@ -69,11 +69,11 @@
                     </div>
                 <?php } ?>
                 <a href="/v/tecnico/cadastro/" class="button"><span class="ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo Técnico</a>
-                <?php include "protected/view/paginacao.php"; ?>
+                <?php include 'protected/view/paginacao.php'; ?>
             </div>
             <!---<div class="foot-pagination"></div>-->
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
     </body>
-</html>
+</html><?php 

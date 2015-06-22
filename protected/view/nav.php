@@ -1,10 +1,9 @@
-<?php require_once './protected/controller/login.inc'; ?>
 <?php
+require_once './protected/controller/login.inc';
 if (!isset($_SESSION)) {
     session_start();
 }
-?>
-<div id="nav-menu">
+?><div id="nav-menu">
     <ul>
         <li>
             <a href="/">Página Inicial</a>
@@ -13,16 +12,19 @@ if (!isset($_SESSION)) {
             <li><a>Chamados</a>
                 <ul>
                     <li><a href="/v/chamado/cadastro/">Abrir Novo Chamado</a></li>
-                    <?php if ($_SESSION['nivel'] == 1 || $_SESSION['nivel'] == 3) { ?>
+                    <?php if (Login::isTriagem()) { ?>
                         <li><a href="/v/chamado/triagem/">Triagem</a></li>
-                    <?php } if ($_SESSION['nivel'] > 0) { ?>
+                        <?php
+                    }
+                    if ($_SESSION['nivel'] > 0) {
+                        ?>
                         <li><a href="/v/chamado/tecnico/">Chamados Designados</a></li>
                     <?php } ?>
                     <li><a href="/v/chamado/historico/">Histórico de Chamados</a></li>
                     <li><a href="/">Listar Todos os Chamados</a></li>
                 </ul>
             </li>
-            <?php if ($_SESSION['nivel'] >= 1) { ?>
+            <?php if (Login::isDti()) { ?>
                 <li>
                     <a>Base Local</a>
                     <ul>
@@ -37,19 +39,19 @@ if (!isset($_SESSION)) {
                 <li><a href="/v/pesquisa/">Pesquisar</a></li>
             <?php } ?>
             <li class="pull-right">
-                <a href="/v/<?= $_SESSION['nivel'] > 0 ? "tecnico" : "usuario" ?>/info/">
-                    <?php if ($_SESSION['nivel'] > 0) { ?>
-                        (Nível <?= $_SESSION['nivel'] ?>)
+                <a href="/v/<?php echo $_SESSION['nivel'] > 0 ? 'tecnico' : 'usuario'; ?>/info/">
+                    <?php if (Login::isDti()) { ?>
+                        (Nível <?php echo $_SESSION['nivel']; ?>)
                     <?php } else { ?>
                         (Usuário)
                     <?php } ?>
-                    <?= explode(" ", $_SESSION['nome'])[0] ?>
+                    <?php echo ($tmp = explode(' ', $_SESSION['nome'])) ? $tmp[0] : $tmp[0]; ?>
                 </a>
                 <ul>
-                    <?php if ($_SESSION['nivel'] > 0) { ?>
+                    <?php if (Login::isDti()) { ?>
                         <li><a href="/v/tecnico/senha">Alterar Senha</a></li>
                     <?php } ?>
-                        <li><a href="/v/usuario/sair" onclick="return confirm('Você realmente quer sair?')">Sair</a></li>
+                    <li><a href="/v/usuario/sair" onclick="return confirm('Você realmente quer sair?')">Sair</a></li>
                 </ul>
             </li>
         <?php } else { ?>

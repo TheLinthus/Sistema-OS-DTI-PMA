@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>Pesquisar em Base Local</title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
                 <legend>Pesquisar em Base Local</legend>
@@ -17,7 +17,7 @@
                     <div class="controls">
                         <div class="input-append">
                             <input id="pesquisa" name="pesquisa" class="input-xlarge" placeholder="palavras chave"
-                                   value="<?= isset($response['pesquisa']) ? $response['pesquisa'] : "" ?>" type="text">
+                                   value="<?php echo isset($response['pesquisa']) ? $response['pesquisa'] : ''; ?>" type="text">
                             <div class="btn-group">
                                 <button class="btn dropdown-toggle" data-toggle="dropdown">
                                     Buscar
@@ -38,7 +38,7 @@
             </div>
             <!---<div class="foot-pagination"></div>-->
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
     </body>
-</html>
+</html><?php 

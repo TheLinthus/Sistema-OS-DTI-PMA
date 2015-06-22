@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>Cadastrar Técnico</title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <form id="form-cadastro-tecnico" method="POST" class="form-horizontal vertical-center center">
                     <fieldset>
@@ -18,8 +18,8 @@
                             <div class="controls">
                                 <div class="input-append">
                                     <input id="cpf" name="cpf" type="text" 
-                                           <?= isset($input['args']['cpf']) ? "value=\"".$input['args']['cpf']."\"" : "" ?>
-                                           <?= isset($input['args']['cpf']) ? "readonly" : "" ?>
+                                           <?php echo isset($input['args']['cpf']) ? 'value="' . $input['args']['cpf'] . '"' : ''; ?>
+                                           <?php echo isset($input['args']['cpf']) ? 'readonly' : ''; ?>
                                            placeholder="___.___.___-__" class="input-xlarge" required>
                                     <span class="add-on">
                                         <span class="ui-icon ui-icon-triangle-1-w"></span>
@@ -44,8 +44,8 @@
                 </form>
             </div>
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
         <script src="/js/acesso.js"></script>
     </body>
-</html>
+</html><?php 

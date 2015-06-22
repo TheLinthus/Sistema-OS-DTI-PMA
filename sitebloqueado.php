@@ -1,65 +1,64 @@
-<?php
+<?php 
+
 header('Content-Type: text/html; charset=utf-8');
-if (isset($_POST['id']) && isset($_GET['site']) && $_GET['site'] !== "") {
+if (isset($_POST['id']) && isset($_GET['site']) && $_GET['site'] !== '') {
     foreach ($_POST as $value) {
-        if ($value == null || $value == "") {
-            $mensagem = "Preencha os campos corretamente!";
+        if ($value == null || $value == '') {
+            $mensagem = 'Preencha os campos corretamente!';
             break;
         }
     }
-
     if (!isset($mensagem)) {
-        require_once("./class.phpmailer.php");
-        require_once("./class.smtp.php");
-
-        $motivo = str_replace("\n", "<br>", $_POST['motivo']);
-        $idtipo = (strlen($_POST['id']) > 5) ? "CPF" : "Matricula";
-
-        $mail = new PHPMailer;
+        require_once './class.phpmailer.php';
+        require_once './class.smtp.php';
+        $motivo = str_replace('
+', '<br>', $_POST['motivo']);
+        $idtipo = strlen($_POST['id']) > 5 ? 'CPF' : 'Matricula';
+        $mail = new PHPMailer();
         $mail->CharSet = 'UTF-8';
-
-        $mail->isSMTP();                                      // Set mailer to use SMTP
-        $mail->Host = '172.17.2.146';                         // Specify main and backup SMTP servers
-        $mail->SMTPAuth = true;                               // Enable SMTP authentication
-        $mail->Username = 'suporte@alegrete.rs.gov.br';       // SMTP username
-        $mail->Password = 'PhV8_!141721';                     // SMTP password
-        $mail->SMTPSecure = 'ssl';                            // Enable TLS encryption, `ssl` also accepted
-        $mail->Port = 465;                                    // TCP port to connect to
-
+        $mail->isSMTP();
+        // Set mailer to use SMTP
+        $mail->Host = '172.17.2.146';
+        // Specify main and backup SMTP servers
+        $mail->SMTPAuth = true;
+        // Enable SMTP authentication
+        $mail->Username = 'suporte@alegrete.rs.gov.br';
+        // SMTP username
+        $mail->Password = 'PhV8_!141721';
+        // SMTP password
+        $mail->SMTPSecure = 'ssl';
+        // Enable TLS encryption, `ssl` also accepted
+        $mail->Port = 465;
+        // TCP port to connect to
         $mail->From = 'suporte@alegrete.rs.gov.br';
         $mail->FromName = 'Sistema Bloqueio de Site';
         $mail->addAddress('rdleiria@gmail.com');
         $mail->addReplyTo($_POST['email'], $_POST['nome']);
-
-        $mail->isHTML(true);                                  // Set email format to HTML
-
-        $mail->Subject = "Solicitação de Liberação de Site";
+        $mail->isHTML(true);
+        // Set email format to HTML
+        $mail->Subject = 'Solicitação de Liberação de Site';
         $mail->Body = "Foi solocitado a liberação do site: <a href='http://{$_GET['site']}'><b><i>{$_GET['site']}</i></b></a><br><br>";
-        $mail->Body .= "Detalhes da Requisição:<br>";
-        $mail->Body .= "<ul>";
+        $mail->Body .= 'Detalhes da Requisição:<br>';
+        $mail->Body .= '<ul>';
         $mail->Body .= "<li><b>Nome:</b> {$_POST['nome']}</li>";
-        $mail->Body .= "<li><b>$idtipo:</b> {$_POST['id']}</li>";
+        $mail->Body .= "<li><b>{$idtipo}:</b> {$_POST['id']}</li>";
         $mail->Body .= "<li><b>E-mail:</b> {$_POST['email']}</li>";
         $mail->Body .= "<li><b>Cargo:</b> {$_POST['cargo']}</li>";
         $mail->Body .= "<li><b>Lotação:</b> {$_POST['lotacao']}</li>";
         $mail->Body .= "<li><b>Local de Trabalho:</b> {$_POST['localdetrabalho']}</li>";
         $mail->Body .= "<li><b>Endereço IP:</b> {$_SERVER['REMOTE_ADDR']}</li>";
-        $mail->Body .= "</ul>";
-        $mail->Body .= "<fieldset><legend>Moivo da Requisição</legend>";
+        $mail->Body .= '</ul>';
+        $mail->Body .= '<fieldset><legend>Moivo da Requisição</legend>';
         $mail->Body .= $motivo;
-        $mail->Body .= "</fieldset>";
-
+        $mail->Body .= '</fieldset>';
         $mail->AltBody = "Foi solocitado a liberação do site: {$_POST['site']}. Por {$_POST['nome']}.";
-
         if (!$mail->send()) {
-            $mensagem = "Erro ao enviar requisição: " . $mail->ErrorInfo;
+            $mensagem = 'Erro ao enviar requisição: ' . $mail->ErrorInfo;
         } else {
-            $mensagem = "Requisição enviada!";
+            $mensagem = 'Requisição enviada!';
         }
     }
-}
-?>
-<!DOCTYPE html>
+} ?><!DOCTYPE html>
 <html lang="pt">
     <head>
         <meta charset="utf-8">
@@ -299,11 +298,9 @@ if (isset($_POST['id']) && isset($_GET['site']) && $_GET['site'] !== "") {
                 return confirm("Você confirma os seus dados e requisição?");
             });
             $("#id").focus();
-<?php
-if (isset($mensagem)) {
-    echo "alert('$mensagem');";
-}
-?>
+<?php if (isset($mensagem)) {
+    echo "alert('{$mensagem}');";
+} ?>
         </script>
     </body>
-</html>
+</html><?php 

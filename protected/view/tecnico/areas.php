@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>Técnico -> Áreas</title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <form id="form-areas" method="POST" class="form-horizontal vertical-center center">
                     <fieldset>
@@ -18,7 +18,8 @@
                             <div class="controls">
                                 <select id="areas" name="remover[]" class="input-xlarge" size="5" multiple>
                                     <?php foreach ($response['data']['areas'] as $id => $area) { ?>
-                                        <option class="new-area" value="<?= $id ?>"><?= $area['area'] ?> (<?= $area['nivel'] ?>)</option>
+                                        <option class="new-area" value="<?php echo $id; ?>"><?php echo $area['area']; ?>
+ (<?php echo $area['nivel']; ?>)</option>
                                     <?php } ?>
                                 </select>
                             </div>
@@ -34,7 +35,8 @@
                             <div class="controls">
                                 <select id="tecnico-areas" name="areas[]" class="input-xlarge" size="5" multiple>
                                     <?php foreach ($response['data']['tecnico']['areas'] as $id => $area) { ?>
-                                        <option class="old-area" value="<?= $id ?>"><?= $area['area'] ?> (<?= $area['nivel'] ?>)</option>
+                                        <option class="old-area" value="<?php echo $id; ?>"><?php echo $area['area']; ?>
+ (<?php echo $area['nivel']; ?>)</option>
                                     <?php } ?>
                                 </select>
                             </div>
@@ -53,8 +55,8 @@
                 </form>
             </div>
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
         <script src="/js/areastecnico.js"></script>
     </body>
-</html>
+</html><?php 

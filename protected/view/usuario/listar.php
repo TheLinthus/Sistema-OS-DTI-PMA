@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
-        <title>Listagem de Usuários (<?= empty($response['data']) ? "Vazio" : $response['pageno'] . "/" . $response['lastpage'] ?>)</title>
+        <?php include 'protected/view/headscripts.php'; ?>
+        <title>Listagem de Usuários (<?php echo empty($response['data']) ? 'Vazio' : $response['pageno'] . '/' . $response['lastpage']; ?>)</title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
                 <legend>Usuários</legend>
@@ -16,8 +16,8 @@
                     <div class="controls">
                         <div class="input-append">
                             <input id="pesquisa" name="pesquisa" class="input-xxlarge" placeholder="palavras chave"
-                            <?= isset($response['pesquisa']) ? "autofocus" : "" ?>
-                                   value="<?= isset($response['pesquisa']) ? $response['pesquisa'] : "" ?>" type="text">
+                            <?php echo isset($response['pesquisa']) ? 'autofocus' : ''; ?>
+                                   value="<?php echo isset($response['pesquisa']) ? $response['pesquisa'] : ''; ?>" type="text">
                             <div class="btn-group">
                                 <button class="btn buscar-bt" data-mod="usuario">
                                     Pesquisar
@@ -42,24 +42,24 @@
                             <tbody>
                                 <?php foreach ($response['data'] as $usuario) { ?>
                                     <tr>
-                                        <td><?= $usuario['cpf'] ?></td>
-                                        <td class="more-info" title="<?= $usuario['nome'] ?>"><?= $usuario['nome'] ?></td>
-                                        <td><?= $usuario['ip'] ?></td>
-                                        <td><?= $usuario['email'] ?></td>
+                                        <td><?php echo $usuario['cpf']; ?></td>
+                                        <td class="more-info" title="<?php echo $usuario['nome']; ?>"><?php echo $usuario['nome']; ?></td>
+                                        <td><?php echo $usuario['ip']; ?></td>
+                                        <td><?php echo $usuario['email']; ?></td>
                                         <td class="span1">
-                                            <a href="/v/usuario/info/cpf/<?= $usuario['cpf'] ?>" class="ui-icon ui-icon-contact" title="Detalhes">Detalhes</a>
+                                            <a href="/v/usuario/info/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-contact" title="Detalhes">Detalhes</a>
                                         </td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/usuario/remove/cpf/<?= $usuario['cpf'] ?>" class="ui-icon ui-icon-trash"
+                                                <a href="/v/usuario/remove/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-trash"
                                                    onclick="return confirm('Você realmente quer remover esse usuário?\nTodas as OS relacionadas irão ser removidas também!')"
                                                    title="Remover">Remover</a>
                                             </td>
                                             <td class="span1">
-                                                <a href="/v/usuario/alterar/cpf/<?= $usuario['cpf'] ?>" class="ui-icon ui-icon-pencil" title="Alterar dados do Usuário">Alterar</a>
+                                                <a href="/v/usuario/alterar/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-pencil" title="Alterar dados do Usuário">Alterar</a>
                                             </td>
                                             <td class="span1">
-                                                <a href="/v/tecnico/cadastro/cpf/<?= $usuario['cpf'] ?>" class="ui-icon ui-icon-person" title="Definir usuário como técnico">Técnico</a>
+                                                <a href="/v/tecnico/cadastro/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-person" title="Definir usuário como técnico">Técnico</a>
                                             </td>
                                         <?php } ?>
                                     </tr>
@@ -68,11 +68,11 @@
                         </table>
                     </div>
                 <?php } ?>
-                <?php include "protected/view/paginacao.php"; ?>
+                <?php include 'protected/view/paginacao.php'; ?>
             </div>
             <!---<div class="foot-pagination"></div>-->
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
     </body>
-</html>
+</html><?php 

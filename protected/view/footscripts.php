@@ -1,4 +1,4 @@
-<!--<script src="/js/jquery-1.11.1.min.js"></script>-->
+<?php  ?><!--<script src="/js/jquery-1.11.1.min.js"></script>-->
 <script src="/js/jquery-2.1.3.js"></script>
 
 <script src="/js/jquery-migrate-1.0.0.js"></script>
@@ -16,5 +16,7 @@
 <script src="/js/jquery.inputmask.bundle.js"></script>
 <script src="/js/autogrow.min.js"></script>
 <script src="/js/ProgressCircle.min.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/additional-methods.min.js"></script>
 
-<script src="/js/sos.js"></script>
+<script src="/js/sos.js"></script><?php 

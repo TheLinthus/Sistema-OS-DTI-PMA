@@ -1,2 +1,4 @@
-<?php
-echo \json_encode($response); exit();
+<?php 
+
+echo \json_encode($response);
+die;

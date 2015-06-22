@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
-        <title>Patrimônios (<?= empty($response['data']) ? "Vazio" : $response['pageno'] . "/" . $response['lastpage'] ?>)</title>
+        <?php include 'protected/view/headscripts.php'; ?>
+        <title>Patrimônios (<?php echo empty($response['data']) ? 'Vazio' : $response['pageno'] . '/' . $response['lastpage']; ?>)</title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
                 <legend>Patrimonios</legend>
@@ -16,8 +16,8 @@
                     <div class="controls">
                         <div class="input-append">
                             <input id="pesquisa" name="pesquisa" class="input-xxlarge" placeholder="palavras chave"
-                            <?= isset($response['pesquisa']) ? "autofocus" : "" ?>
-                                   value="<?= isset($response['pesquisa']) ? $response['pesquisa'] : "" ?>" type="text">
+                            <?php echo isset($response['pesquisa']) ? 'autofocus' : ''; ?>
+                                   value="<?php echo isset($response['pesquisa']) ? $response['pesquisa'] : ''; ?>" type="text">
                             <div class="btn-group">
                                 <button class="btn buscar-bt" data-mod="patrimonio">
                                     Pesquisar
@@ -42,27 +42,27 @@
                             <tbody>
                                 <?php foreach ($response['data'] as $patrimonio) { ?>
                                     <tr>
-                                        <td><?= $patrimonio['id'] ?></td>
-                                        <td><?= $patrimonio['placa'] ?></td>
-                                        <td class="more-info" title="<?= $patrimonio['descricao'] ?>"><?= $patrimonio['descricao'] ?></td>
-                                        <td class="more-info" title="<?= $patrimonio['observacoes'] ?>"><?= $patrimonio['observacoes'] ?></td>
+                                        <td><?php echo $patrimonio['id']; ?></td>
+                                        <td><?php echo $patrimonio['placa']; ?></td>
+                                        <td class="more-info" title="<?php echo $patrimonio['descricao']; ?>"><?php echo $patrimonio['descricao']; ?></td>
+                                        <td class="more-info" title="<?php echo $patrimonio['observacoes']; ?>"><?php echo $patrimonio['observacoes']; ?></td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/patrimonio/remove/id/<?= $patrimonio['id'] ?>"class="ui-icon ui-icon-trash"
+                                                <a href="/v/patrimonio/remove/id/<?php echo $patrimonio['id']; ?>"class="ui-icon ui-icon-trash"
                                                    onclick="return confirm('Você realmente quer excluir esse patrimônio da base local?/nPara isso não deve haver nenhuma Ordem de Serviço relacionada.')"
                                                    title="Excluir Patrimônico da Base Local">Remover Patrimônio</a>
                                             </td>
                                             <td class="span1">
                                                 <a href="#"
-                                                   data-id="<?= $patrimonio['id'] ?>"
-                                                   data-placa="<?= $patrimonio['placa'] ?>"
-                                                   data-descricao="<?= $patrimonio['descricao'] ?>"
-                                                   data-observacoes="<?= $patrimonio['observacoes'] ?>"
+                                                   data-id="<?php echo $patrimonio['id']; ?>"
+                                                   data-placa="<?php echo $patrimonio['placa']; ?>"
+                                                   data-descricao="<?php echo $patrimonio['descricao']; ?>"
+                                                   data-observacoes="<?php echo $patrimonio['observacoes']; ?>"
                                                    class="ren-patrimonio ui-icon ui-icon-pencil" title="Alterar dados do Patrimônio">Alterar</a>
                                             </td>
                                         <?php } ?>
                                         <td class="span1">
-                                            <a href="/v/chamado/listar/patrimonio/<?= $patrimonio['id'] ?>" class="ui-icon ui-icon-folder-open" title="Exibir chamados do Patrimônio">Chamados</a>
+                                            <a href="/v/chamado/listar/patrimonio/<?php echo $patrimonio['id']; ?>" class="ui-icon ui-icon-folder-open" title="Exibir chamados do Patrimônio">Chamados</a>
                                         </td>
                                     </tr>
                                 <?php } ?>
@@ -92,13 +92,13 @@
                         <a href="/v/patrimonio/cadastro/" class="button new-patrimonio"><span class="new-patrimonio ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo patrimônio *</a>
                     </div>
                 </div>
-                <?php include "protected/view/paginacao.php"; ?>
+                <?php include 'protected/view/paginacao.php'; ?>
                 <p>* Os patrimônios são inseridos de acordo com a criação de OS. A inserção manual deve ser feita apenas para patrimônios não existentes na base do e-cidade.</p>
             </div>
             <!---<div class="foot-pagination"></div>-->
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
         <script src="/js/patrimonioslista.js"></script>
     </body>
-</html>
+</html><?php 

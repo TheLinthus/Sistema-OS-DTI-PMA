@@ -1,4 +1,4 @@
-<footer class="footer">
+<?php  ?><footer class="footer">
     <div class="container" id="foot">
         <a href="/"><img src="/img/LogoDTI.png" style="height: 50px;"/></a>
         <div>
@@ -14,4 +14,4 @@
             </p>
         </div>
     </div>
-</footer>
+</footer><?php 

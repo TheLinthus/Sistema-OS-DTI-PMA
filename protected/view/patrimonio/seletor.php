@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>Seletor de Patrimônio</title>
     </head>
     <body>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
                 <div class="control-group">
@@ -42,7 +42,7 @@
                 <!---<div class="pagination"></div>-->
             </div>
         </div>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
         <script src="/js/patrimonioseletor.js"></script>
     </body>
-</html>
+</html><?php 

@@ -1,4 +1,4 @@
-<header class="header">
+<?php  ?><header class="header">
     <noscript>
     <div id="noscript" class="ui-widget">
         <div class="ui-state-error ui-corner-all">
@@ -12,4 +12,4 @@
         </div>
     </div>
     </noscript>
-</header>
+</header><?php 

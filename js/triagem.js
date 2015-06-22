@@ -15,6 +15,7 @@ $(document).ready(function () {
             trying = true;
             $.ajax({
                 dataType: "json",
+                data: {md5: $("#chamados-table").data("md5")},
                 url: "/v/chamado/triagemupdate/",
                 success: function (data) {
                     if (data.md5 !== $("#chamados-table").data("md5")) {

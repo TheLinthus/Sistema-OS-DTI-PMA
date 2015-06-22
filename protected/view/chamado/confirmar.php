@@ -1,4 +1,5 @@
-<?php
+<?php 
+
 echo '<legend>input -> POST</legend>';
 echo '<pre>';
 var_dump($input['post']);

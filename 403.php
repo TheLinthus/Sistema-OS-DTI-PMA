@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>403 Acesso negado</title>
     </head>
     <body class="alert-error">
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <div class="vertical-center pagination-centered">
                     <div class="container">
@@ -26,7 +26,6 @@
                 </div>
             </div>
         </div>
-        <?php include "protected/view/footer.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
     </body>
-    <?php include "protected/view/footscripts.php"; ?>
-</html>
+    <?php include 'protected/view/footscripts.php'; ?></html><?php 

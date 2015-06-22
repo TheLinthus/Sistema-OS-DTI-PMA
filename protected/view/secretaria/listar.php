@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>Listagem de Unidades</title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
                 <legend>Secretarias</legend>
@@ -16,8 +16,8 @@
                     <div class="controls">
                         <div class="input-append">
                             <input id="pesquisa" name="pesquisa" class="input-xxlarge" placeholder="palavras chave"
-                            <?= isset($response['pesquisa']) ? "autofocus" : "" ?>
-                                   value="<?= isset($response['pesquisa']) ? $response['pesquisa'] : "" ?>" type="text">
+                            <?php echo isset($response['pesquisa']) ? 'autofocus' : ''; ?>
+                                   value="<?php echo isset($response['pesquisa']) ? $response['pesquisa'] : ''; ?>" type="text">
                             <div class="btn-group">
                                 <button class="btn buscar-bt" data-mod="secretaria">
                                     Pesquisar
@@ -42,16 +42,16 @@
                             <tbody>
                                 <?php foreach ($response['data'] as $secretaria) { ?>
                                     <tr>
-                                        <td><?= $secretaria['id'] ?></td>
-                                        <td><?= $secretaria['secretaria'] ?></td>
+                                        <td><?php echo $secretaria['id']; ?></td>
+                                        <td><?php echo $secretaria['secretaria']; ?></td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/secretaria/remove/id/<?= $secretaria['id'] ?>" class="ui-icon ui-icon-trash"
+                                                <a href="/v/secretaria/remove/id/<?php echo $secretaria['id']; ?>" class="ui-icon ui-icon-trash"
                                                    onclick="return confirm('Você realmente quer remover essa Secretaria?\nTodos os Setores relacionados serão removidos também!')"
                                                    title="Remover">Remover</a>
                                             </td>
                                             <td class="span1">
-                                                <a href="#" data-id="<?= $secretaria['id'] ?>" data-nome="<?= $secretaria['secretaria'] ?>" class="ren-secretaria ui-icon ui-icon-pencil" title="Renomear Secretaria">Alterar</a>
+                                                <a href="#" data-id="<?php echo $secretaria['id']; ?>" data-nome="<?php echo $secretaria['secretaria']; ?>" class="ren-secretaria ui-icon ui-icon-pencil" title="Renomear Secretaria">Alterar</a>
                                             </td>
                                         <?php } ?>
                                     </tr>
@@ -80,8 +80,8 @@
             </div>
             <!---<div class="foot-pagination"></div>-->
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
         <script src="/js/secretariaslista.js"></script>
     </body>
-</html>
+</html><?php 

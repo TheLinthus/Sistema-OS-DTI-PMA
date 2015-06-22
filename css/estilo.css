@@ -355,6 +355,11 @@ input[disabled], select[disabled], textarea[disabled] {
     margin: 10px auto;
     width: 276px;
 }
+@media print {
+    #nav-menu, footer {
+        display: none;
+    }
+}
 
 @media (max-width: 800px) {
     #noscript {

@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>Listagem de Setores</title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
                 <legend>Setores</legend>
@@ -16,8 +16,8 @@
                     <div class="controls">
                         <div class="input-append">
                             <input id="pesquisa" name="pesquisa" class="input-xxlarge" placeholder="palavras chave"
-                            <?= isset($response['pesquisa']) ? "autofocus" : "" ?>
-                                   value="<?= isset($response['pesquisa']) ? $response['pesquisa'] : "" ?>" type="text">
+                            <?php echo isset($response['pesquisa']) ? 'autofocus' : ''; ?>
+                                   value="<?php echo isset($response['pesquisa']) ? $response['pesquisa'] : ''; ?>" type="text">
                             <div class="btn-group">
                                 <button class="btn buscar-bt" data-mod="setor">
                                     Pesquisar
@@ -29,13 +29,13 @@
                         <label class="control-label" for="filtro">Filtrar por Secretaria</label>
                         <div class="controls">
                             <select id="filtro" name="filtro" class="input-xxlarge">
-                                <option <?= isset($response['filtro']) ? "" : "selected" ?>>NENHUMA</option>
+                                <option <?php echo isset($response['filtro']) ? '' : 'selected'; ?>>NENHUMA</option>
                                 <optgroup label="Secretarias">
                                     <?php foreach ($response['secretarias'] as $id => $secretaria) { ?>
                                         <option 
-                                        <?= isset($response['filtro']) && $response['filtro'] == $id ? "selected" : "" ?>
-                                            value="<?= $id ?>" class="filtro">
-                                                <?= $secretaria ?>
+                                        <?php echo isset($response['filtro']) && $response['filtro'] == $id ? 'selected' : ''; ?>
+                                            value="<?php echo $id; ?>" class="filtro">
+                                                <?php echo $secretaria; ?>
                                         </option>
                                     <?php } ?>
                                 </optgroup>
@@ -63,28 +63,28 @@
                             <tbody>
                                 <?php foreach ($response['data'] as $setor) { ?>
                                     <tr>
-                                        <td><?= $setor['id'] ?></td>
-                                        <td><?= $setor['setor'] ?></td>
-                                        <td class="more-info" title="<?= $response['secretarias'][$setor['secretaria']] ?>">
-                                            <?= $response['secretarias'][$setor['secretaria']] ?>
+                                        <td><?php echo $setor['id']; ?></td>
+                                        <td><?php echo $setor['setor']; ?></td>
+                                        <td class="more-info" title="<?php echo $response['secretarias'][$setor['secretaria']]; ?>">
+                                            <?php echo $response['secretarias'][$setor['secretaria']]; ?>
                                         </td>
-                                        <td><?= $setor['escola'] ? "SIM" : "NÃO" ?></td>
-                                        <td><?= $setor['telefone'] ?></td>
-                                        <td><?= $setor['prioridade'] ?></td>
+                                        <td><?php echo $setor['escola'] ? 'SIM' : 'NÃO'; ?></td>
+                                        <td><?php echo $setor['telefone']; ?></td>
+                                        <td><?php echo $setor['prioridade']; ?></td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/setor/remove/id/<?= $setor['id'] ?>" class="ui-icon ui-icon-trash"
+                                                <a href="/v/setor/remove/id/<?php echo $setor['id']; ?>" class="ui-icon ui-icon-trash"
                                                    onclick="return confirm('Você realmente quer remover esse setor?\nTodos os chamados perderão relação com o setor!')"
                                                    title="Remover">Remover</a>
                                             </td>
                                             <td class="span1">
                                                 <a href="#"
-                                                   data-id="<?= $setor['id'] ?>"
-                                                   data-nome="<?= $setor['setor'] ?>"
-                                                   data-secretaria="<?= $setor['secretaria'] ?>"
-                                                   data-escola="<?= $setor['escola'] ?>"
-                                                   data-telefone="<?= $setor['telefone'] ?>"
-                                                   data-prioridade="<?= $setor['prioridade'] ?>"
+                                                   data-id="<?php echo $setor['id']; ?>"
+                                                   data-nome="<?php echo $setor['setor']; ?>"
+                                                   data-secretaria="<?php echo $setor['secretaria']; ?>"
+                                                   data-escola="<?php echo $setor['escola']; ?>"
+                                                   data-telefone="<?php echo $setor['telefone']; ?>"
+                                                   data-prioridade="<?php echo $setor['prioridade']; ?>"
                                                    class="ren-setor ui-icon ui-icon-pencil" title="Renomear e alterar valores do Setor">Alterar</a>
                                             </td>
                                         <?php } ?>
@@ -102,8 +102,8 @@
                             <div class="controls">
                                 <select id="secretaria-id" name="secretaria-id" class="input-xlarge">
                                     <?php foreach ($response['secretarias'] as $id => $secretaria) { ?>
-                                        <option value="<?= $id ?>">
-                                            <?= $secretaria ?>
+                                        <option value="<?php echo $id; ?>">
+                                            <?php echo $secretaria; ?>
                                         </option>
                                     <?php } ?>
                                 </select>
@@ -139,12 +139,12 @@
                         <a href="/v/setor/cadastro/" class="button new-setor"><span class="ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo Setor</a>
                     </div>
                 </div>
-                <?php include "protected/view/paginacao.php"; ?>
+                <?php include 'protected/view/paginacao.php'; ?>
             </div>
             <!---<div class="foot-pagination"></div>-->
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
         <script src="/js/setoreslista.js"></script>
     </body>
-</html>
+</html><?php 

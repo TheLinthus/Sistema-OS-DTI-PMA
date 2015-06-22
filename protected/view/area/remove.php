@@ -1,3 +1,3 @@
-<script>
+<?php  ?><script>
 window.history.back();
-</script>
+</script><?php 

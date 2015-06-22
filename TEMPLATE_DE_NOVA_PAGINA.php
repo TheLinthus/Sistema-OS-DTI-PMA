@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>Titulo da Página</title> <!-- MODIFICAR TITULO DA PÁGINA AQUI -->
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
                     
@@ -15,12 +15,13 @@
                     Nome: < ?= $response['data'][''] ?>
                     -->
                 
-                <?php // include "protected/view/paginacao.php"; ?> <!-- OPCIONAL! Para casos de listas com várias páginas -->
+                <?php ?>
+ <!-- OPCIONAL! Para casos de listas com várias páginas -->
             </div>
             <!---<div class="foot-pagination"></div>-->
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
         <!--<script src="/js/abrirchamado.js"></script>-->  <!-- OPCIONAL! Se é necessário um script explusivo para essa página -->
     </body>
-</html>
+</html><?php 

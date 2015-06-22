@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<?php  ?><!DOCTYPE html>
 <html lang="pt">
     <head>
-        <?php include "protected/view/headscripts.php"; ?>
+        <?php include 'protected/view/headscripts.php'; ?>
         <title>Listagem de Modulos</title>
     </head>
     <body>
-        <?php include "protected/view/nav.php"; ?>
+        <?php include 'protected/view/nav.php'; ?>
         <div class="container">
-            <?php include "protected/view/header.php"; ?>
+            <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
                 <legend>Áreas</legend>
@@ -28,23 +28,23 @@
                             <tbody>
                                 <?php foreach ($response['data'] as $area) { ?>
                                     <tr>
-                                        <td style="background-color: <?= isset($_SESSION['areas'][$area['id']]) ? "#eeffee" : "#ffeeee" ?>;"><?= $area['id'] ?></td>
-                                        <td><?= $area['area'] ?></td>
-                                        <td><?= $area['nivel'] ?></td>
+                                        <td style="background-color: <?php echo isset($_SESSION['areas'][$area['id']]) ? '#eeffee' : '#ffeeee'; ?>;"><?php echo $area['id']; ?></td>
+                                        <td><?php echo $area['area']; ?></td>
+                                        <td><?php echo $area['nivel']; ?></td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/area/remove/id/<?= $area['id'] ?>" class="ui-icon ui-icon-trash"
+                                                <a href="/v/area/remove/id/<?php echo $area['id']; ?>" class="ui-icon ui-icon-trash"
                                                    onclick="return confirm('Você realmente quer remover essa área?\nTodos os técnicos perderão relação com a área selecionada!')"
                                                    title="Remover">Remover</a>
                                             </td>
                                             <td class="span1">
-                                                <a href="#" data-id="<?= $area['id'] ?>" data-nome="<?= $area['area'] ?>" data-nivel="<?= $area['nivel'] ?>" class="ren-area ui-icon ui-icon-pencil" title="Renomear e alterar nível da Área">Alterar</a>
+                                                <a href="#" data-id="<?php echo $area['id']; ?>" data-nome="<?php echo $area['area']; ?>" data-nivel="<?php echo $area['nivel']; ?>" class="ren-area ui-icon ui-icon-pencil" title="Renomear e alterar nível da Área">Alterar</a>
                                             </td>
                                         <?php } ?>
                                         <?php if ($_SESSION['nivel'] >= 2) { ?>
                                             <td class="span1">
                                                 <?php if (isset($_SESSION['areas'][$area['id']])) { ?>
-                                                    <a href="/v/modulo/listar/area/<?= $area['id'] ?>" data-id="<?= $area['id'] ?>" class="ui-icon ui-icon-folder-open" title="Cadastrar e Editar Modulos">Cadastrar Modulos</a>
+                                                    <a href="/v/modulo/listar/area/<?php echo $area['id']; ?>" data-id="<?php echo $area['id']; ?>" class="ui-icon ui-icon-folder-open" title="Cadastrar e Editar Modulos">Cadastrar Modulos</a>
                                                 <?php } ?>
                                             </td>
                                         <?php } ?>
@@ -71,8 +71,8 @@
             </div>
             <!---<div class="foot-pagination"></div>-->
         </div>
-        <?php include "protected/view/footer.php"; ?>
-        <?php include "protected/view/footscripts.php"; ?>
+        <?php include 'protected/view/footer.php'; ?>
+        <?php include 'protected/view/footscripts.php'; ?>
         <script src="/js/areaslista.js"></script>
     </body>
-</html>
+</html><?php 
