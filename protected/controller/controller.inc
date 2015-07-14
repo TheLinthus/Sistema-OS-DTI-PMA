@@ -7,6 +7,18 @@ require_once './protected/database/postgresql.inc';
 
 use model;
 
+class SistemaController {
+
+    function index(&$input) {
+        $output = array();
+
+
+
+        return $output;
+    }
+
+}
+
 class ArquivosController {
 
     /**
@@ -155,6 +167,7 @@ class ChamadoController {
                 $chamado = new \model\Chamado();
                 $arquivos = new \model\Arquivos();
                 $estado = new \model\Estado();
+                $usuario = new \model\Usuario();
                 if (strlen($input['post']['descricao']) < 10) {
                     echo '<script>';
                     echo 'alert(\'A descrição está muito curta (no mínimo 10 caracteres, escritos ' . strlen($input['post']['descricao']) . ')!\');';
@@ -162,9 +175,52 @@ class ChamadoController {
                     echo '</script>';
                     return $output;
                 }
-                $prioridade = ($tmp = $setor->getData('id = \'' . mysql_escape_string($input['post']['setor']) . '\'')) ? $tmp[0]['prioridade'] : $tmp[0]['prioridade'];
+                $rs = $setor->getData('id = \'' . mysql_escape_string($input['post']['setor']) . '\'');
+                $prioridade = $rs[0]['prioridade'];
                 $input['post']['iporigem'] = getIP();
-                $input['post']['usuario_cpf'] = $_SESSION['cpf'];
+                if (\Login::isDti() && !(empty($input['post']['usuario-cgm']) || $input['post']['usuario-cgm'] < 0)) {
+                    $rs = $usuario->getData('cgm = \'' . mysql_escape_string($input['post']['usuario-cgm']) . '\'');
+                    if (isset($rs[0])) {
+                        $input['post']['usuario_cpf'] = $rs[0]['cpf'];
+                    } else {
+                        $ecidade = new \database\ECidade();
+                        $where = "cgm_id = '" . mysql_escape_string($input['post']['usuario-cgm']) . "'";
+                        $rs = $ecidade->getData('public.v_cgm', $where);
+                        if (isset($rs[0])) {
+                            $newrecord['cgm'] = $rs[0]['cgm_id'];
+                            $newrecord['cpf'] = $rs[0]['cgm_cpf'];
+                            $input['post']['usuario_cpf'] = $rs[0]['cgm_cpf'];
+                            $newrecord['nome'] = $rs[0]['cgm_nome'];
+                            $newrecord['email'] = $rs[0]['cgm_email'];
+                            $where = "fun_cpf = '" . $rs[0]['cgm_cpf'] . "'";
+                            $rs = $ecidade->getData('public.v_funcionario', $where);
+                            if (isset($rs[0])) {
+                                $newrecord['matricula'] = $rs[0]['fun_matricula'];
+                                $newrecord['cargo'] = $rs[0]['fun_cargo'];
+                            } else {
+                                $newrecord['matricula'] = "";
+                                $newrecord['cargo'] = "Não Registrado";
+                            }
+                        }
+                        $where = "fun_matricula = '{$input['post']['matricula']}'";
+                        $rs = $ecidade->getData('public.v_funcionario', $where);
+                        if (isset($rs[0])) {
+                            $newrecord['cgm'] = $rs[0]['fun_cgm'];
+                            $newrecord['cpf'] = $rs[0]['fun_cpf'];
+                            $input['post']['usuario_cpf'] = $rs[0]['fun_cpf'];
+                            $newrecord['nome'] = $rs[0]['fun_nome'];
+                            $newrecord['email'] = $rs[0]['fun_email'];
+                            $newrecord['cargo'] = $rs[0]['fun_cargo'];
+                            $newrecord['matricula'] = $rs[0]['fun_matricula'];
+                            $usuario->insertRecord($newrecord);
+                        } else {
+                            $output['mensagem'] = 'Não foi possivel fazer o cadastro do usuário!';
+                            return $output;
+                        }
+                    }
+                } else {
+                    $input['post']['usuario_cpf'] = $_SESSION['cpf'];
+                }
                 $input['post']['prioridade'] = $this->calculo($prioridade, $input['post']['prioridade']);
                 if (empty($input['post']['patrimonio']) || $input['post']['patrimonio'] < 0) {
                     unset($input['post']['patrimonio']);
@@ -173,6 +229,7 @@ class ChamadoController {
                         $input['post']['descricao'] .= ' (Placa do patrimônio: ' . $input['post']['patrimonio'] . ')';
                     }
                 }
+                // Limpa os campos não selecionados
                 if (empty($input['post']['problema']) || $input['post']['problema'] < 0) {
                     unset($input['post']['problema']);
                 }
@@ -599,9 +656,6 @@ class ChamadoController {
                 foreach ($output['data']['estado'] as &$estado) {
                     $estado['data'] = new \DateTime($estado['data']);
                     $estado['data'] = $estado['data']->format('d/m/Y H:i');
-                    echo "<pre>";
-                    var_dump($estado);
-                    echo "</pre>";
                 }
                 $output['arquivos'] = $arquivos->getData('chamado = \'' . $output['data']['id'] . '\'', array(), array('id', 'nome'));
                 foreach ($output['arquivos'] as &$arquivo) {
@@ -1372,9 +1426,9 @@ class PatrimonioController {
         $output = array();
         if (\Login::isLogedIn()) {
             $patrimonio = new model\Patrimonio();
-            $patrimonio->setRowsPerPage(4);
+            $patrimonio->setRowsPerPage(9);
             if (isset($input['get']['b']) && !empty($input['get']['b'])) {
-                $output = $patrimonio->getData('placa LIKE \'%' . $input['get']['b'] . '%\' AND id != 0');
+                $output = $patrimonio->getData('placa LIKE \'%' . mysql_escape_string($input['get']['b']) . '%\' AND id != 0');
             }
             $output[] = array('id' => 0, 'placa' => '????', 'descricao' => 'Não Cadatrado', 'obeservacoes' => '');
         } else {
@@ -1681,7 +1735,7 @@ class TecnicoController {
                         // Verifica o nível de acesso que o usuario tera baseado na area (se tem area de nível 3 será nível 3)
                         $tecnico_data['nivel'] = max($tecnico_data['nivel'], $area_data['nivel']);
                         // Adiciona permições de triagem se tiver a Área de triagem
-                        if ($tecnico_area['nivel'] == 1) {
+                        if ($tecnico_area['nivel'] == 1 || $tecnico_area['nivel'] == 3) {
                             $tecnico_data['triagem'] = 1;
                         }
                     }
@@ -2134,6 +2188,36 @@ class UsuarioController {
     }
 
     /**
+     * lista 4 usuarios buscados na base local.
+     * Requer estar logado
+     * 
+     * @param array $input
+     * @return array
+     */
+    function json(&$input) {
+        $output = array();
+        if (\Login::isLogedIn()) {
+            $b = mysql_escape_string($input['get']['b']);
+            $where = 'cgm_nome LIKE \'%' . $b . '%\''
+                    . ' OR fun_matricula LIKE \'%' . $b . '%\''
+                    . ' OR cgm_cpf LIKE \'%' . $b . '%\''
+                    . ' OR cgm_id LIKE \'%' . $b . '%\'';
+            $ecidade = new \database\ECidade();
+            $rs = $ecidade->getData('public.v_cgm INNER JOIN public.v_funcionario ON (v_cgm.cgm_cpf = v_funcionario.fun_cpf)', $where, 'LIMIT 10');
+            foreach($rs as $row) {
+                $usuario = array();
+                $usuario['cgm'] = $row['cgm_id'];
+                $usuario['nome'] = $row['cgm_nome'];
+                $usuario['matricula'] = $row['fun_matricula'];
+                $output[] = $usuario;
+            }
+        } else {
+            $output['error'] = 'notAllowed';
+        }
+        return $output;
+    }
+
+    /**
      * Executa logout de sessão, remove dados da sessão existente então redireciona para página inicial
      * 
      * @return array Saida de dados
@@ -2486,6 +2570,11 @@ class UsuarioController {
         } else {
             $output['error'] = 'notAllowed';
         }
+        return $output;
+    }
+
+    function seletor(&$input) {
+        $output = array();
         return $output;
     }
 

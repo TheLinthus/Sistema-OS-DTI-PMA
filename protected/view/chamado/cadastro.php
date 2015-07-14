@@ -1,4 +1,4 @@
-<?php  ?><!DOCTYPE html>
+<?php ?><!DOCTYPE html>
 <html lang="pt">
     <head>
         <?php include 'protected/view/headscripts.php'; ?>
@@ -98,6 +98,23 @@
                         <fieldset id="step-3" data-etapa="3" class="step <?php echo $response['etapa'] < 3 ? 'hide' : 'active'; ?>">
                             <legend>Abrir Chamado - Preencha o formulário</legend>
                             <div class="flex-container">
+                                <?php if (\Login::isDti()) { ?>
+                                    <div class="control-group">
+                                        <label class="control-label" for="usuario-nome">Vincular Usuário</label>
+                                        <div class="controls">
+                                            <div class="input-append">
+                                                <input id="usuario-nome" name="usuario-nome" class="input-xlarge" placeholder="(opcional) Usuário a ser vinculado ao chamado" type="text" readonly>
+                                                <input id="usuario-cgm" name="usuario-cgm" type="hidden">
+                                                <div class="btn-group">
+                                                    <button id="usuario-btn" class="btn" data-mod="usuario">
+                                                        Selecionar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <p class="help-block">Caso o chamado deve ser vinculado a outro usuário selecione acima.</p>
+                                        </div>
+                                    </div>
+                                <?php } ?>
                                 <div class="control-group">
                                     <label class="control-label" for="area">Área Responsavel</label>
                                     <div class="controls">

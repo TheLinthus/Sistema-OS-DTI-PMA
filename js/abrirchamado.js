@@ -160,8 +160,17 @@ $(document).ready(function () {
         window.open("/v/patrimonio/seletor", "patrimonio-seletor", "height=370, width=500, location=0, scrollbars=0,resizable=0, top=" + midY + ", left=" + midX);
     });
 
+    $("#usuario-btn").click(function (e) {
+        e.preventDefault();
+        var midX, midY;
+        midX = window.innerWidth / 2 - 400 + window.screenX;
+        midY = window.innerHeight / 2 - 225 + window.screenY;
+        window.open("/v/usuario/seletor", "usuario-seletor", "height=500, width=800, location=0, scrollbars=0,resizable=0, top=" + midY + ", left=" + midX);
+    });
+
     window.onmessage = function (e) {
         log = e;
+        console.log(e.data);
         if (e.source.name === "patrimonio-seletor") {
             if (e.data !== undefined) {
                 if (e.data.id === 0) {
@@ -171,6 +180,12 @@ $(document).ready(function () {
                 }
                 $("#patrimonio-descricao").val(e.data.desc);
                 $("#patrimonio").val(e.data.id);
+            }
+        }
+        if (e.source.name === "usuario-seletor") {
+            if (e.data !== undefined) {
+                $("#usuario-nome").val(e.data.nome);
+                $("#usuario-cgm").val(e.data.cgm);
             }
         }
     };

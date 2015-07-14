@@ -2,15 +2,14 @@
 
 namespace database;
 
-class DataBase
-{
+class DataBase {
     private $dbconnect = NULL;
     // Conexão com o banco
-    private $dbhost = '172.17.2.23';
+    private $dbhost = 'localhost';
     // Endereço do servidor de BD
     private $dbusername = 'root';
     // Usúario no servidor de BD
-    private $dbuserpass = '2747';
+    private $dbuserpass = 'root';
     // Senha no servidor de BD
     private $query = NULL;
     // Variavel para armazenar consulta no banco
@@ -22,8 +21,7 @@ class DataBase
     /*
      *  Conecta-se com o banco de dados com os dados preenchidos
      */
-    function db_connect($dbname)
-    {
+    function db_connect($dbname) {
         // Caso não haja uma conexão existente, conectar
         if (!$this->dbconnect) {
             $this->dbconnect = mysql_connect($this->dbhost, $this->dbusername, $this->dbuserpass);
@@ -42,8 +40,7 @@ class DataBase
             return $this->dbconnect;
         }
     }
-    function close()
-    {
+    function close() {
         mysql_close($this->dbconnect);
         $this->dbconnect = null;
     }

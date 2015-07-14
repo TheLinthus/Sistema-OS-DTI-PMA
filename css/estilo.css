@@ -74,6 +74,11 @@ footer.footer {
     text-align: right;
     word-break: normal;
 }
+#build {
+    margin-left: 10px;
+    font-size: 10px;
+    color: #999;
+}
 #ver-chamado .control-group, .control-group.no-margin-bottom {
     margin-bottom: 0 !important;
 }

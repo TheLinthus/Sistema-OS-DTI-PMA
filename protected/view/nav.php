@@ -14,10 +14,7 @@ if (!isset($_SESSION)) {
                     <li><a href="/v/chamado/cadastro/">Abrir Novo Chamado</a></li>
                     <?php if (Login::isTriagem()) { ?>
                         <li><a href="/v/chamado/triagem/">Triagem</a></li>
-                        <?php
-                    }
-                    if ($_SESSION['nivel'] > 0) {
-                        ?>
+                        <?php } if ($_SESSION['nivel'] > 0) { ?>
                         <li><a href="/v/chamado/tecnico/">Chamados Designados</a></li>
                     <?php } ?>
                     <li><a href="/v/chamado/historico/">Histórico de Chamados</a></li>

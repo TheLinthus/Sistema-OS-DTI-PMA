@@ -2,8 +2,7 @@
 
 namespace database;
 
-class PostgreSQLBase
-{
+class PostgreSQLBase {
     private $dbconnect = NULL;
     // Conexão com o banco
     private $dbname = 'alegrete';
@@ -20,8 +19,7 @@ class PostgreSQLBase
     /*
      *  Conecta-se com o banco de dados com os dados preenchidos
      */
-    function db_connect()
-    {
+    function db_connect() {
         // Caso não haja uma conexão existente, conectar
         if (!$this->dbconnect) {
             $this->dbconnect = pg_connect("host={$this->dbhost} port={$this->dbport} dbname={$this->dbname} user={$this->dbusername} password={$this->dbuserpass}");
@@ -37,14 +35,12 @@ class PostgreSQLBase
             return $this->dbconnect;
         }
     }
-    function close()
-    {
+    function close() {
         pg_close($this->dbconnect);
         $this->dbconnect = null;
     }
 }
-class ECidade
-{
+class ECidade {
     function getData($table, $where = '', $extra = '')
     {
         $pg = new PostgreSQLBase();
