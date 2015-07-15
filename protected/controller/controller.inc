@@ -2198,7 +2198,7 @@ class UsuarioController {
         $output = array();
         if (\Login::isLogedIn()) {
             $b = mysql_escape_string($input['get']['b']);
-            $where = 'cgm_nome LIKE \'%' . $b . '%\''
+            $where = 'cgm_nome ILIKE \'%' . $b . '%\''
                     . ' OR fun_matricula LIKE \'%' . $b . '%\''
                     . ' OR cgm_cpf LIKE \'%' . $b . '%\''
                     . ' OR cgm_id LIKE \'%' . $b . '%\'';
