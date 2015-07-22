@@ -10,7 +10,7 @@
             </p>
             <p>
                 Development by 
-                <a href="https://twitter.com/TheLinthus">@TheLinthus</a><a id="build" href="/v/sistema" target="_BLANK">Build 1.2.2</a>
+                <a href="https://twitter.com/TheLinthus">@TheLinthus</a><a id="build" href="/v/sistema" target="_BLANK">Build 1.2.4</a>
             </p>
         </div>
     </div>

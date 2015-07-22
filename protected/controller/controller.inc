@@ -168,6 +168,7 @@ class ChamadoController {
                 $arquivos = new \model\Arquivos();
                 $estado = new \model\Estado();
                 $usuario = new \model\Usuario();
+                // Força insersão de descrição
                 if (strlen($input['post']['descricao']) < 10) {
                     echo '<script>';
                     echo 'alert(\'A descrição está muito curta (no mínimo 10 caracteres, escritos ' . strlen($input['post']['descricao']) . ')!\');';
@@ -175,9 +176,12 @@ class ChamadoController {
                     echo '</script>';
                     return $output;
                 }
+                // Definição de prioridade baseado em setor
                 $rs = $setor->getData('id = \'' . mysql_escape_string($input['post']['setor']) . '\'');
                 $prioridade = $rs[0]['prioridade'];
+                // Rastrear ip de origem do chamado
                 $input['post']['iporigem'] = getIP();
+                // Se o chamado está sendo aberto internamente pelo DTI pode haver um usuario vinculado, para 'abrir como'
                 if (\Login::isDti() && !(empty($input['post']['usuario-cgm']) || $input['post']['usuario-cgm'] < 0)) {
                     $rs = $usuario->getData('cgm = \'' . mysql_escape_string($input['post']['usuario-cgm']) . '\'');
                     if (isset($rs[0])) {
@@ -185,6 +189,7 @@ class ChamadoController {
                     } else {
                         $ecidade = new \database\ECidade();
                         $where = "cgm_id = '" . mysql_escape_string($input['post']['usuario-cgm']) . "'";
+                        //$table = 'public.v_cgm INNER JOIN public.v_funcionario ON (v_cgm.cgm_cpf = v_funcionario.fun_cpf)';
                         $rs = $ecidade->getData('public.v_cgm', $where);
                         if (isset($rs[0])) {
                             $newrecord['cgm'] = $rs[0]['cgm_id'];
@@ -201,21 +206,7 @@ class ChamadoController {
                                 $newrecord['matricula'] = "";
                                 $newrecord['cargo'] = "Não Registrado";
                             }
-                        }
-                        $where = "fun_matricula = '{$input['post']['matricula']}'";
-                        $rs = $ecidade->getData('public.v_funcionario', $where);
-                        if (isset($rs[0])) {
-                            $newrecord['cgm'] = $rs[0]['fun_cgm'];
-                            $newrecord['cpf'] = $rs[0]['fun_cpf'];
-                            $input['post']['usuario_cpf'] = $rs[0]['fun_cpf'];
-                            $newrecord['nome'] = $rs[0]['fun_nome'];
-                            $newrecord['email'] = $rs[0]['fun_email'];
-                            $newrecord['cargo'] = $rs[0]['fun_cargo'];
-                            $newrecord['matricula'] = $rs[0]['fun_matricula'];
                             $usuario->insertRecord($newrecord);
-                        } else {
-                            $output['mensagem'] = 'Não foi possivel fazer o cadastro do usuário!';
-                            return $output;
                         }
                     }
                 } else {
