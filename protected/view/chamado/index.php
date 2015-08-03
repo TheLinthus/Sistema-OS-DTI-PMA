@@ -12,54 +12,68 @@
             <div id="content">
                 <!---<div class="pagination"></div>-->
                 <legend>Chamados</legend>
-                <form id="filtros">
-                    <div class="control-group">
-                        <label class="control-label" for="pesquisa">Pesquisar por</label>
-                        <div class="controls">
-                            <div class="input-append">
-                                <input id="pesquisa" name="pesquisa" class="input-xxlarge" placeholder="(id, descrição, ip de origem, dados do usuário, patrimônio)"
-                                <?php echo isset($response['pesquisa']) ? 'autofocus' : ''; ?>
-                                       value="<?php echo isset($response['pesquisa']) ? $response['pesquisa'] : ''; ?>" type="text">
-                                <div class="btn-group">
-                                    <button class="btn buscar-bt" data-mod="chamado" data-act="index">
-                                        Pesquisar
-                                    </button>
+                <div class="hidding-box retracted">
+                    <a class="hidder" href="#filtros">Filtros</a>
+                    <form id="filtros" class="hidding-content">
+                        <div class="control-group">
+                            <label class="control-label" for="pesquisa">Pesquisar por</label>
+                            <div class="controls">
+                                <div class="input-append">
+                                    <input id="pesquisa" name="pesquisa" class="input-xxlarge" placeholder="(id, descrição, ip de origem, dados do usuário, patrimônio)"
+                                    <?php echo isset($response['pesquisa']) ? 'autofocus' : ''; ?>
+                                           value="<?php echo isset($response['pesquisa']) ? $response['pesquisa'] : ''; ?>" type="text">
+                                    <div class="btn-group">
+                                        <button class="btn buscar-bt" data-mod="chamado" data-act="index">
+                                            Pesquisar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="data-range">
+                                <div class="controls">
+                                    <label for="dataA">Periodo</label>
+                                    <input id="dataA" name="dataA" type="date" class="input-medium"
+                                           value="<?php echo isset($response['dataA']) ? $response['dataA'] : date('Y-m-d', strtotime('-1 month')); ?>">
+                                </div>
+                                <div class="controls">
+                                    <label for="dataB">Até</label>
+                                    <div class="input-append">
+                                        <input id="dataB" name="dataB" type="date" class="input-medium"
+                                               value="<?php echo isset($response['dataB']) ? $response['dataB'] : date('Y-m-d'); ?>">
+                                        <div class="btn-group">
+                                            <button class="btn relatorio-bt" disabled title="Em construção">
+                                                Gerar Relatório do Periodo
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <label class="control-label" id="filtro-estado">Estado</label>
+                            <div class="controls">
+                                <label class="checkbox inline" for="filtro-estado-1">
+                                    <input type="checkbox" id="filtro-estado-1" value="1" checked="true">
+                                    Aberto
+                                </label>
+                                <label class="checkbox inline" for="filtro-estado-2">
+                                    <input type="checkbox" id="filtro-estado-2" value="2" checked="true">
+                                    Atendimento
+                                </label>
+                                <label class="checkbox inline" for="filtro-estado-5">
+                                    <input type="checkbox" id="filtro-estado-5" value="5"  checked="true">
+                                    Terceirizado
+                                </label>
+                                <label class="checkbox inline" for="filtro-estado-3">
+                                    <input type="checkbox" id="filtro-estado-3" value="3">
+                                    Pronto/Fechado
+                                </label>
+                                <label class="checkbox inline" for="filtro-estado-4">
+                                    <input type="checkbox" id="filtro-estado-4" value="4">
+                                    Baixa
+                                </label>
+                            </div>
                         </div>
-<!--                        <label for="dataA">Periodo</label>
-                        <div class="controls">
-                            <input id="dataA" name="dataA" type="date" class="input-medium"
-                                   value="<?php echo isset($response['dataA']) ? $response['dataA'] : date("Y-m-d", time() - 3600 * 24 * 30); ?>">
-                            <span>até</span>
-                            <input id="dataB" name="dataB" type="date" class="input-medium"
-                                   value="<?php echo isset($response['dataB']) ? $response['dataB'] : date("Y-m-d"); ?>">
-                        </div>-->
-                        <label class="control-label" id="filtro-estado">Estado</label>
-                        <div class="controls">
-                            <label class="checkbox inline" for="filtro-estado-1">
-                                <input type="checkbox" id="filtro-estado-1" value="1" checked="true">
-                                Aberto
-                            </label>
-                            <label class="checkbox inline" for="filtro-estado-2">
-                                <input type="checkbox" id="filtro-estado-2" value="2" checked="true">
-                                Atendimento
-                            </label>
-                            <label class="checkbox inline" for="filtro-estado-5">
-                                <input type="checkbox" id="filtro-estado-5" value="5"  checked="true">
-                                Terceirizado
-                            </label>
-                            <label class="checkbox inline" for="filtro-estado-3">
-                                <input type="checkbox" id="filtro-estado-3" value="3">
-                                Pronto/Fechado
-                            </label>
-                            <label class="checkbox inline" for="filtro-estado-4">
-                                <input type="checkbox" id="filtro-estado-4" value="4">
-                                Baixa
-                            </label>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
                 <?php include 'protected/view/mensagem.php'; ?>
                 <div class="table-responsive">
                     <table id="chamados-table" data-md5="<?php echo $response['md5']; ?>" class="table table-striped table-bordered table-hover">
@@ -113,7 +127,7 @@
                     </table>
                 </div>
             </div>
-            <!---<div class="foot-pagination"></div>-->
+            <div class="foot-pagination"></div>
         </div>
         <audio id="notification"><source src="/sounds/served.mp3"></audio>
             <?php include 'protected/view/footer.php'; ?>

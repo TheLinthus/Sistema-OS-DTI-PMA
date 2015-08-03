@@ -1,4 +1,4 @@
-var vvv;
+
 $(document).ready(function () {
     var verifyInterval = null;
     var trying = false;
@@ -11,6 +11,8 @@ $(document).ready(function () {
                 post.sort = $(".sorted-desc").length ? ($(".sorted-desc").data("column") + "-desc") : ($(".sorted-asc").data("column") + "-asc");
                 post.tipo = [];
                 post.pesquisa = $("#pesquisa").val();
+                post.dataA = $("#dataA").val();
+                post.dataB = $("#dataB").val();
                 post.md5 = $("#chamados-table").data("md5");
                 $("#filtro-estado + div input:checked").each(function () {
                     post.tipo.push($(this).val());
@@ -69,7 +71,7 @@ $(document).ready(function () {
             ;
     });
 
-    verifyInterval = setInterval(verifyChamados, 2000);
+    verifyInterval = setInterval(verifyChamados, 3000);
 
     if (!$("#pesquisa").val()) {
         history.replaceState({}, "", "/");

@@ -673,17 +673,29 @@ class ChamadoController {
      * @param array $tipos Lista de inteiros, que referenciam o tipo dos estados a serem buscados
      * @return type
      */
-    function listaChamados($nivel = 0, $restringirtecnico = false, $filtro = '', $sort = 'prioridade-desc', $tipos = array()) {
+    function listaChamados($nivel = 0, $restringirtecnico = false, $filtro = '', $sort = 'prioridade-desc', $tipos = array(), $dataA = '', $dataB = '') {
         $chamado = new \model\Chamado();
         $area = new \model\Area();
         $usuario = new \model\Usuario();
         $estado = new \model\Estado();
         $problema = new \model\Problema();
         $sql = '';
+        if (empty($dataB)) {
+            $dataB = date('Y-m-d');
+        }
+        if (empty($dataA)) {
+            $dataA = date('Y-m-d', strtotime('-1 month', strtotime($dataB)));
+        }
         if (!empty($filtro)) {
-            $sql .= $filtro;
+            $sql .= '(' . $filtro . ')';
             $sql .= ' AND ';
         }
+        $sql .= 'id IN';
+        $sql .= '(SELECT chamado ';
+        $sql .= 'FROM estado ';
+        $sql .= 'WHERE data >= \'' . $dataA . '\' AND ';
+        $sql .= 'data < \'' . $dataB . '\' + INTERVAL 1 DAY)';
+        $sql .= ' AND ';
         if ($nivel > 0) {
             // SELECIONA SOMENTE CHAMADOS EM QUE O ULTIMO ESTADO REPRESENTA UM ESTADO DE NIVEL $nivel E QUE PODEM SER ATENDIDAS PELO TECNICO LOGADO
             $sql .= 'id IN ';
@@ -853,15 +865,22 @@ class ChamadoController {
     function indexupdate(&$input) {
         $output = array();
         $output['pesquisa'] = isset($input['post']['pesquisa']) ? urldecode($input['post']['pesquisa']) : '';
+        
         $filtro = '';
         if (isset($input['post']['pesquisa']) && !empty($input['post']['pesquisa'])) {
-            $filtro = 'concat_ws(\'|\',id,descricao,iporigem) LIKE \'%' . mysql_escape_string($output['pesquisa']) . '%\' OR ' . 'usuario_cpf IN (SELECT cpf FROM usuario WHERE ' . 'concat_ws(\'|\',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho) LIKE \'%' . mysql_escape_string($output['pesquisa']) . '%\') OR ' . 'patrimonio IN (SELECT id FROM patrimonio WHERE ' . 'concat_ws(\'|\',descricao,placa) LIKE \'%' . mysql_escape_string($output['pesquisa']) . '%\')';
+            $filtro = 'concat_ws(\'|\',id,descricao,iporigem) LIKE \'%' 
+                    . mysql_escape_string($output['pesquisa']) . '%\' OR '
+                    . 'usuario_cpf IN (SELECT cpf FROM usuario WHERE ' 
+                    . 'concat_ws(\'|\',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho) LIKE \'%' 
+                    . mysql_escape_string($output['pesquisa']) . '%\') OR ' 
+                    . 'patrimonio IN (SELECT id FROM patrimonio WHERE ' 
+                    . 'concat_ws(\'|\',descricao,placa) LIKE \'%' 
+                    . mysql_escape_string($output['pesquisa']) . '%\')';
         }
-        if (isset($input['post']['tipo']) && !empty($input['post']['tipo'])) {
+        if (!isset($input['post']['tipo']) || empty($input['post']['tipo'])) {
             $data = $this->listaChamados(0, false, $filtro, $input['post']['sort'], $input['post']['tipo']);
-        } else {
-            $data = $this->listaChamados(0, false, $filtro, $input['post']['sort']);
         }
+        $data = $this->listaChamados(0, false, $filtro, $input['post']['sort'], $input['post']['tipo'], $input['post']['dataA'], $input['post']['dataB']);
         $output['md5'] = md5(serialize($data));
         if ($output['md5'] != $input['post']['md5']) {
             $output['data'] = $data;

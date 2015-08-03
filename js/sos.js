@@ -419,6 +419,12 @@ $(document).ready(function () {
         title: "SOS - Sistema Ordem de Serviço",
         format: "multitoggle"
     });
+    
+    $(".hidder").click(function(e) {
+        e.preventDefault();
+        $(this).parent().toggleClass("collapsed retracted");
+        $(this).siblings(".hidding-content").toggle(400);
+    });
 
     $("a.button").button();
 
@@ -471,5 +477,6 @@ $(document).ready(function () {
     });
 
     $(".attachment").button();
+    $(".retracted .hidding-content").delay(1000).hide(400);
 }
 );

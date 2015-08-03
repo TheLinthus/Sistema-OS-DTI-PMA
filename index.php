@@ -5,6 +5,15 @@ require_once './protected/controller/UploadHandler.inc';
 require_once './protected/controller/controller.inc';
 require_once './protected/controller/login.inc';
 /**
+ * envolve uma variavem no elemento PRE e exibe
+ * @param type $var variavel a ser debugada
+ */
+function dump($var) {
+    echo '<pre>';
+    var_dump($var);
+    echo '</pre>';
+}
+/**
  * Redireciona para página de erro 404
  */
 function notFound()
