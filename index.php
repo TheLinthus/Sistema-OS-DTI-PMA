@@ -4,6 +4,9 @@
 require_once './protected/controller/UploadHandler.inc';
 require_once './protected/controller/controller.inc';
 require_once './protected/controller/login.inc';
+
+$versao = "1.3.1";
+
 /**
  * envolve uma variavem no elemento PRE e exibe
  * @param type $var variavel a ser debugada

@@ -442,6 +442,8 @@ $(document).ready(function () {
         var newlocation = "/v/" + mod + "/" + act; // define caminho para redirecionamento
         newlocation += $("#pesquisa").val() !== "" ? "/b/" + encodeURIComponent($("#pesquisa").val()) : ""; // adiciona argumentos de busca
         newlocation += $(".filtro:selected").length ? "/f/" + $(".filtro:selected").val() : ""; // adciona argumentos de filtro
+        newlocation += $("#dataA").length ? "/da/" + $("#dataA").val() : "";
+        newlocation += $("#dataB").length ? "/db/" + $("#dataB").val() : "";
         window.location = newlocation;
     });
     $("#filtro").change(function () {

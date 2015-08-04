@@ -19,4 +19,4 @@
 <script src="/js/jquery.validate.min.js"></script>
 <script src="/js/additional-methods.min.js"></script>
 
-<script src="/js/sos.js"></script><?php 
+<script src="/js/sos.js?v=<?= $versao ?>"></script><?php 

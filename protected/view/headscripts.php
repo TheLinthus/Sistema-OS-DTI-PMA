@@ -10,7 +10,7 @@
 <link href="/css/file-icons.css" rel="stylesheet">
 <link href="/css/custom-theme/jquery-ui-1.10.0.custom.css" rel="stylesheet" />
 <link href="/assets/css/font-awesome.min.css" rel="stylesheet" />
-<link href="/css/estilo.css" rel="stylesheet">
+<link href="/css/estilo.css?v=<?= $versao ?>" rel="stylesheet">
 <!--[if IE 7]>
 <link rel="stylesheet" type="text/css" href="/assets/css/font-awesome-ie7.min.css">
 <![endif]-->

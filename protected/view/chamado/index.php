@@ -41,7 +41,7 @@
                                         <input id="dataB" name="dataB" type="date" class="input-medium"
                                                value="<?php echo isset($response['dataB']) ? $response['dataB'] : date('Y-m-d'); ?>">
                                         <div class="btn-group">
-                                            <button class="btn relatorio-bt" disabled title="Em construção">
+                                            <button type="button" class="btn relatorio-bt" disabled title="Em construção">
                                                 Gerar Relatório do Periodo
                                             </button>
                                         </div>

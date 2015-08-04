@@ -865,20 +865,20 @@ class ChamadoController {
     function indexupdate(&$input) {
         $output = array();
         $output['pesquisa'] = isset($input['post']['pesquisa']) ? urldecode($input['post']['pesquisa']) : '';
-        
+
         $filtro = '';
         if (isset($input['post']['pesquisa']) && !empty($input['post']['pesquisa'])) {
-            $filtro = 'concat_ws(\'|\',id,descricao,iporigem) LIKE \'%' 
+            $filtro = 'concat_ws(\'|\',id,descricao,iporigem) LIKE \'%'
                     . mysql_escape_string($output['pesquisa']) . '%\' OR '
-                    . 'usuario_cpf IN (SELECT cpf FROM usuario WHERE ' 
-                    . 'concat_ws(\'|\',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho) LIKE \'%' 
-                    . mysql_escape_string($output['pesquisa']) . '%\') OR ' 
-                    . 'patrimonio IN (SELECT id FROM patrimonio WHERE ' 
-                    . 'concat_ws(\'|\',descricao,placa) LIKE \'%' 
+                    . 'usuario_cpf IN (SELECT cpf FROM usuario WHERE '
+                    . 'concat_ws(\'|\',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho) LIKE \'%'
+                    . mysql_escape_string($output['pesquisa']) . '%\') OR '
+                    . 'patrimonio IN (SELECT id FROM patrimonio WHERE '
+                    . 'concat_ws(\'|\',descricao,placa) LIKE \'%'
                     . mysql_escape_string($output['pesquisa']) . '%\')';
         }
         if (!isset($input['post']['tipo']) || empty($input['post']['tipo'])) {
-            $data = $this->listaChamados(0, false, $filtro, $input['post']['sort'], $input['post']['tipo']);
+            $input['post']['tipo'] = array();
         }
         $data = $this->listaChamados(0, false, $filtro, $input['post']['sort'], $input['post']['tipo'], $input['post']['dataA'], $input['post']['dataB']);
         $output['md5'] = md5(serialize($data));
@@ -902,9 +902,22 @@ class ChamadoController {
         $output['pesquisa'] = isset($input['args']['b']) ? urldecode($input['args']['b']) : '';
         $filtro = '';
         if (isset($input['args']['b']) && !empty($input['args']['b'])) {
-            $filtro = 'concat_ws(\'|\',id,descricao,iporigem) LIKE \'%' . mysql_escape_string($output['pesquisa']) . '%\' OR ' . 'usuario_cpf IN (SELECT cpf FROM usuario WHERE ' . 'concat_ws(\'|\',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho) LIKE \'%' . mysql_escape_string($output['pesquisa']) . '%\') OR ' . 'patrimonio IN (SELECT id FROM patrimonio WHERE ' . 'concat_ws(\'|\',descricao,placa) LIKE \'%' . mysql_escape_string($output['pesquisa']) . '%\')';
+            $filtro = 'concat_ws(\'|\',id,descricao,iporigem) LIKE \'%'
+                    . mysql_escape_string($output['pesquisa']) . '%\' OR '
+                    . 'usuario_cpf IN (SELECT cpf FROM usuario WHERE '
+                    . 'concat_ws(\'|\',cpf,nome,matricula,cgm,email,cargo,lotacao,localdetrabalho) LIKE \'%'
+                    . mysql_escape_string($output['pesquisa']) . '%\') OR '
+                    . 'patrimonio IN (SELECT id FROM patrimonio WHERE '
+                    . 'concat_ws(\'|\',descricao,placa) LIKE \'%'
+                    . mysql_escape_string($output['pesquisa']) . '%\')';
         }
-        $output['data'] = $this->listaChamados(0, false, $filtro, 'prioridade-desc', array(1, 2, 5));
+        if (isset($input['get']['dataA']) && $input['get']['dataB']) {
+            $output['data'] = $this->listaChamados(0, false, $filtro, 'prioridade-desc', array(1, 2, 5), $input['get']['dataA'], $input['get']['dataB']);
+            $output['dataA'] = $input['get']['dataA'];
+            $output['dataB'] = $input['get']['dataB'];
+        } else {
+            $output['data'] = $this->listaChamados(0, false, $filtro, 'prioridade-desc', array(1, 2, 5));
+        }
         $output['md5'] = md5(serialize($output['data']));
         return $output;
     }
@@ -2214,7 +2227,7 @@ class UsuarioController {
                     . ' OR cgm_id LIKE \'%' . $b . '%\'';
             $ecidade = new \database\ECidade();
             $rs = $ecidade->getData('public.v_cgm INNER JOIN public.v_funcionario ON (v_cgm.cgm_cpf = v_funcionario.fun_cpf)', $where, 'LIMIT 10');
-            foreach($rs as $row) {
+            foreach ($rs as $row) {
                 $usuario = array();
                 $usuario['cgm'] = $row['cgm_id'];
                 $usuario['nome'] = $row['cgm_nome'];

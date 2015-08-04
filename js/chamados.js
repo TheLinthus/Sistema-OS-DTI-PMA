@@ -71,6 +71,14 @@ $(document).ready(function () {
             ;
     });
 
+    $(".data-range input").keypress(function (e) {
+        if (e.which == 13) {
+            e.preventDefault();
+            while (!verifyChamados())
+                ;
+        }
+    });
+
     verifyInterval = setInterval(verifyChamados, 3000);
 
     if (!$("#pesquisa").val()) {
