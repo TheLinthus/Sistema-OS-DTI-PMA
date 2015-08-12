@@ -4,6 +4,8 @@ namespace controller;
 
 require_once './protected/model/model.inc';
 require_once './protected/database/postgresql.inc';
+require_once './protected/mailer/class.phpmailer.php';
+require_once './protected/mailer/class.smtp.php';
 
 use model;
 
@@ -262,6 +264,57 @@ class ChamadoController {
         return $output;
     }
 
+    function avisarTecnicos($area) {
+        $areastecnico = new \model\AreasTecnico();
+        $usuario = new \model\Usuario();
+
+        $rs = $areastecnico->getData('area_id = \'' . $area . '\'');
+        $emails = array();
+
+        foreach ($rs as $vinculo) {
+            $tmp = $usuario->getData('cpf = \'' . $vinculo['tecnico_cpf'] . '\'');
+            if (!empty($tmp[0]['email'])) {
+                $emails[] = $tmp[0]['email'];
+            }
+        }
+
+        if (empty($emails)) {
+            return false;
+        }
+
+        $mail = new PHPMailer();
+
+        $mail->CharSet = 'UTF-8';
+        $mail->isSMTP();
+        // Set mailer to use SMTP
+        $mail->Host = '172.17.2.146';
+        // Specify main and backup SMTP servers
+        $mail->SMTPAuth = true;
+        // Enable SMTP authentication
+        $mail->Username = 'suporte@alegrete.rs.gov.br';
+        // SMTP username
+        $mail->Password = 'PhV8_!141721';
+        // SMTP password
+        $mail->SMTPSecure = 'ssl';
+        // Enable TLS encryption, `ssl` also accepted
+        $mail->Port = 465;
+        // TCP port to connect to
+        $mail->From = 'suporte@alegrete.rs.gov.br';
+        $mail->FromName = 'Sistema Ordem de Serviços';
+        foreach ($emails as $email){
+            $mail->addAddress($email);
+        }
+        $mail->addReplyTo('suporte@alegrete.rs.gov.br');
+        $mail->isHTML(true);
+        // Set email format to HTML
+        $mail->Subject = 'Novo Chamado para sua Area';
+        $mail->Body = "Há um jogo chamado designado para a sua área, favor coferir no sistema SOS em ";
+        $mail->Body .= '<a href=\'http://172.17.2.4/v/chamado/tecnico/\'Chamados Designados<a>';
+        $mail->AltBody = "Há um jogo chamado designado para a sua área";
+
+        return $mail->send();
+    }
+
     function encaminhar(&$input) {
         $output = array();
         if (\Login::isLogedIn() && \Login::isDti()) {
@@ -273,22 +326,23 @@ class ChamadoController {
                 $rs = $chamado->getData("id = '{$input['post']['id']}'");
                 if (isset($rs[0])) {
                     $estados = $estado->getData('chamado = \'' . $rs[0]['id'] . '\'');
+                    $endestados = end($estados);
                     if ($rs[0]['area'] == null && (!isset($input['post']['area']) || $input['post']['id'] == 'null')) {
                         $output['mensagem'] = 'Não pode encaminhar sem área';
                         return $output;
                     }
                     // Se o estado atual do chamado é finalizado ou baixa
-                    if ((($tmp = end($estados)) ? $tmp['nivel'] : $tmp['nivel']) > '2') {
+                    if ($endestados['nivel'] > '2') {
                         $output['mensagem'] = 'O Chamado solicitado já está finalizado';
                         return $output;
                     }
                     // Se o estado do chamado já é de em atendimento e não é o mesmo usuário que está atendendo logado
-                    if ((($tmp = end($estados)) ? $tmp['tipo'] : $tmp['tipo']) == '2' && (($tmp = end($estados)) ? $tmp['tecnico_cpf'] : $tmp['tecnico_cpf']) != $_SESSION['cpf']) {
+                    if ($endestados['tipo'] == '2' && $endestados['tecnico_cpf'] != $_SESSION['cpf']) {
                         $output['mensagem'] = 'O Chamado solicitado já está em atendimento por outro técnico';
                         return $output;
                     }
                     // Se o seu nível é diferente do estado do chamado ou o usuário logado não possui a área designada
-                    if ($_SESSION['nivel'] != 3 && (($tmp = end($estados)) ? $tmp['nivel'] : $tmp['nivel']) != $_SESSION['nivel'] || (($tmp = end($estados)) ? $tmp['nivel'] : $tmp['nivel']) != 1 && !isset($_SESSION['areas'][$rs[0]['area']])) {
+                    if ($_SESSION['nivel'] != 3 && $endestados['nivel'] != $_SESSION['nivel'] || $endestados['nivel'] != 1 && !isset($_SESSION['areas'][$rs[0]['area']])) {
                         $output['mensagem'] = 'O Chamado solicitado não está designado para uma área que você atende.';
                         return $output;
                     }
@@ -300,17 +354,20 @@ class ChamadoController {
                     $update['solucao'] = $input['post']['solucao'];
                     $update['patrimonio'] = $input['post']['patrimonio'];
                     $update['id'] = $input['post']['id'];
-                    if ((($tmp = end($estados)) ? $tmp['nivel'] : $tmp['nivel']) == 1) {
+                    if ($endestados['nivel'] == 1) {
                         $update['area'] = $input['post']['area'];
                     }
                     $chamado->updateRecord($update);
                     $areachamado = ($tmp = $area->getData('id = ' . $rs[0]['area'])) ? $tmp[0]['area'] : $tmp[0]['area'];
                     $atendendo = array();
                     $atendendo['chamado'] = $input['post']['id'];
-                    if ((($tmp = end($estados)) ? $tmp['nivel'] : $tmp['nivel']) == 1) {
+                    if ($endestados['nivel'] == 1) {
                         $atendendo['estado'] = 'Encaminhado para Técnico (' . $areachamado . ')';
                         $atendendo['tipo'] = 1;
-                    } elseif ((($tmp = end($estados)) ? $tmp['nivel'] : $tmp['nivel']) == 2 && (($tmp = end($estados)) ? $tmp['tipo'] : $tmp['tipo']) == 5) {
+                        if (!$this->avisarTecnicos($rs[0]['area'])) {
+                            $output['mensagem'] = 'Não foi possivel enviar e-mail aos Técnicos';
+                        }
+                    } elseif ($endestados['nivel'] == 2 && $endestados['tipo'] == 5) {
                         $atendendo['estado'] = 'Em Análise ' . $areachamado;
                         $atendendo['tecnico_cpf'] = $_SESSION['cpf'];
                         $atendendo['tipo'] = 2;
@@ -680,22 +737,18 @@ class ChamadoController {
         $estado = new \model\Estado();
         $problema = new \model\Problema();
         $sql = '';
-        if (empty($dataB)) {
-            $dataB = date('Y-m-d');
-        }
-        if (empty($dataA)) {
-            $dataA = date('Y-m-d', strtotime('-1 month', strtotime($dataB)));
-        }
         if (!empty($filtro)) {
             $sql .= '(' . $filtro . ')';
             $sql .= ' AND ';
         }
-        $sql .= 'id IN';
-        $sql .= '(SELECT chamado ';
-        $sql .= 'FROM estado ';
-        $sql .= 'WHERE data >= \'' . $dataA . '\' AND ';
-        $sql .= 'data < \'' . $dataB . '\' + INTERVAL 1 DAY)';
-        $sql .= ' AND ';
+        if (!empty($dataA)) {
+            $sql .= 'id IN';
+            $sql .= '(SELECT chamado ';
+            $sql .= 'FROM estado ';
+            $sql .= 'WHERE data >= \'' . $dataA . '\' AND ';
+            $sql .= 'data < \'' . $dataB . '\' + INTERVAL 1 DAY)';
+            $sql .= ' AND ';
+        }
         if ($nivel > 0) {
             // SELECIONA SOMENTE CHAMADOS EM QUE O ULTIMO ESTADO REPRESENTA UM ESTADO DE NIVEL $nivel E QUE PODEM SER ATENDIDAS PELO TECNICO LOGADO
             $sql .= 'id IN ';
@@ -916,7 +969,9 @@ class ChamadoController {
             $output['dataA'] = $input['get']['dataA'];
             $output['dataB'] = $input['get']['dataB'];
         } else {
-            $output['data'] = $this->listaChamados(0, false, $filtro, 'prioridade-desc', array(1, 2, 5));
+            $dataB = date('Y-m-d');
+            $dataA = date('Y-m-d', strtotime('-1 month', strtotime($dataB)));
+            $output['data'] = $this->listaChamados(0, false, $filtro, 'prioridade-desc', array(1, 2, 5), $dataA, $dataB);
         }
         $output['md5'] = md5(serialize($output['data']));
         return $output;
