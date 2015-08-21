@@ -282,7 +282,7 @@ class ChamadoController {
             return false;
         }
 
-        $mail = new PHPMailer();
+        $mail = new \PHPMailer();
 
         $mail->CharSet = 'UTF-8';
         $mail->isSMTP();
@@ -293,14 +293,14 @@ class ChamadoController {
         // Enable SMTP authentication
         $mail->Username = 'suporte@alegrete.rs.gov.br';
         // SMTP username
-        $mail->Password = 'PhV8_!141721';
+        $mail->Password = 'PhV8_141721';
         // SMTP password
-        $mail->SMTPSecure = 'ssl';
+        $mail->SMTPSecure = 'tls';//'ssl';
         // Enable TLS encryption, `ssl` also accepted
-        $mail->Port = 465;
+        $mail->Port = 587;
         // TCP port to connect to
         $mail->From = 'suporte@alegrete.rs.gov.br';
-        $mail->FromName = 'Sistema Ordem de Serviços';
+        $mail->FromName = 'Sistema de Ordens de Serviço';
         foreach ($emails as $email){
             $mail->addAddress($email);
         }
@@ -308,8 +308,9 @@ class ChamadoController {
         $mail->isHTML(true);
         // Set email format to HTML
         $mail->Subject = 'Novo Chamado para sua Area';
-        $mail->Body = "Há um jogo chamado designado para a sua área, favor coferir no sistema SOS em ";
-        $mail->Body .= '<a href=\'http://172.17.2.4/v/chamado/tecnico/\'Chamados Designados<a>';
+        $mail->Body = "<h1>Sistema de Ordens de Serviço</h1>";
+        $mail->Body .= "Há um novo chamado designado para a sua área, favor coferir no sistema SOS em ";
+        $mail->Body .= "<b>Chamados Designados</b>";
         $mail->AltBody = "Há um jogo chamado designado para a sua área";
 
         return $mail->send();
