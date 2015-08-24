@@ -5,7 +5,7 @@ require_once './protected/controller/UploadHandler.inc';
 require_once './protected/controller/controller.inc';
 require_once './protected/controller/login.inc';
 
-$versao = "1.4.2";
+include './protected/versao.inc';
 
 /**
  * envolve uma variavem no elemento PRE e exibe

@@ -264,11 +264,32 @@ class ChamadoController {
         return $output;
     }
 
-    function avisarTecnicos($area) {
+    function avisarTecnicos($chamado) {
         $areastecnico = new \model\AreasTecnico();
         $usuario = new \model\Usuario();
+        $area = new \model\Area();
+        $modulo = new \model\Modulo();
+        $problema = new \model\Problema();
+        $patrimonio = new \model\Patrimonio();
 
-        $rs = $areastecnico->getData('area_id = \'' . $area . '\'');
+        $chamado['area'] = $chamado['area'] != null ? ($tmp = $area->getData('id = \'' . $chamado['area'] . '\'')) ? $tmp[0]['area'] : $tmp[0]['area'] : 'Não Informado';
+        $chamado['modulo'] = $chamado['modulo'] != null ? ($tmp = $modulo->getData('id = \'' . $chamado['modulo'] . '\'')) ? $tmp[0]['modulo'] : $tmp[0]['modulo'] : 'Não Informado';
+        $chamado['problema'] = $chamado['problema'] != null ? ($tmp = $problema->getData('id = \'' . $chamado['problema'] . '\'')) ? $tmp[0]['problema'] : $tmp[0]['problema'] : 'Não Informado';
+        $chamado['patrimonio'] = $chamado['patrimonio'] != null ? ($tmp = $patrimonio->getData('id = \'' . $chamado['patrimonio'] . '\'')) ? $tmp[0]['descricao'] : $tmp[0]['descricao'] : 'Não Informado';
+
+        if ((int) $chamado['prioridade'] < 20) {
+            $chamado['nomeprioridade'] = 'Baixa';
+        } elseif ((int) $chamado['prioridade'] < 40) {
+            $chamado['nomeprioridade'] = 'Média';
+        } elseif ((int) $chamado['prioridade'] < 60) {
+            $chamado['nomeprioridade'] = 'Alta';
+        } elseif ((int) $chamado['prioridade'] < 80) {
+            $chamado['nomeprioridade'] = 'Muito Alta';
+        } else {
+            $chamado['nomeprioridade'] = 'Urgente';
+        }
+
+        $rs = $areastecnico->getData('area_id = \'' . $chamado['area'] . '\'');
         $emails = array();
 
         foreach ($rs as $vinculo) {
@@ -295,13 +316,13 @@ class ChamadoController {
         // SMTP username
         $mail->Password = 'PhV8_141721';
         // SMTP password
-        $mail->SMTPSecure = 'tls';//'ssl';
+        $mail->SMTPSecure = 'tls'; //'ssl';
         // Enable TLS encryption, `ssl` also accepted
         $mail->Port = 587;
         // TCP port to connect to
         $mail->From = 'suporte@alegrete.rs.gov.br';
         $mail->FromName = 'Sistema de Ordens de Serviço';
-        foreach ($emails as $email){
+        foreach ($emails as $email) {
             $mail->addAddress($email);
         }
         $mail->addReplyTo('suporte@alegrete.rs.gov.br');
@@ -311,6 +332,26 @@ class ChamadoController {
         $mail->Body = "<h1>Sistema de Ordens de Serviço</h1>";
         $mail->Body .= "Há um novo chamado designado para a sua área, favor coferir no sistema SOS em ";
         $mail->Body .= "<b>Chamados Designados</b>";
+        $mail->Body .= "<ul>";
+        $mail->Body .= "<li>Area: ";
+        $mail->Body .= $chamado['area'];
+        $mail->Body .= "</li>";
+        $mail->Body .= "<li>Modulo: ";
+        $mail->Body .= $chamado['modulo'];
+        $mail->Body .= "</li>";
+        $mail->Body .= "<li>Problema: ";
+        $mail->Body .= $chamado['problema'];
+        $mail->Body .= "</li>";
+        $mail->Body .= "<li>Patrimonio: ";
+        $mail->Body .= $chamado['patrimonio'];
+        $mail->Body .= "</li>";
+        $mail->Body .= "<li>Prioridade: ";
+        $mail->Body .= $chamado['nomeprioridade'];
+        $mail->Body .= "</li>";
+        $mail->Body .= "<li>Descrição: ";
+        $mail->Body .= $chamado['problema'];
+        $mail->Body .= "</li>";
+        $mail->Body .= "</ul>";
         $mail->AltBody = "Há um jogo chamado designado para a sua área";
 
         return $mail->send();
@@ -365,7 +406,7 @@ class ChamadoController {
                     if ($endestados['nivel'] == 1) {
                         $atendendo['estado'] = 'Encaminhado para Técnico (' . $areachamado . ')';
                         $atendendo['tipo'] = 1;
-                        if (!$this->avisarTecnicos($rs[0]['area'])) {
+                        if (!$this->avisarTecnicos($rs[0])) {
                             $output['mensagem'] = 'Não foi possivel enviar e-mail aos Técnicos';
                         }
                     } elseif ($endestados['nivel'] == 2 && $endestados['tipo'] == 5) {
