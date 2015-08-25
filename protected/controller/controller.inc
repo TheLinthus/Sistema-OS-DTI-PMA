@@ -272,11 +272,6 @@ class ChamadoController {
         $problema = new \model\Problema();
         $patrimonio = new \model\Patrimonio();
 
-        $chamado['area'] = $chamado['area'] != null ? ($tmp = $area->getData('id = \'' . $chamado['area'] . '\'')) ? $tmp[0]['area'] : $tmp[0]['area'] : 'Não Informado';
-        $chamado['modulo'] = $chamado['modulo'] != null ? ($tmp = $modulo->getData('id = \'' . $chamado['modulo'] . '\'')) ? $tmp[0]['modulo'] : $tmp[0]['modulo'] : 'Não Informado';
-        $chamado['problema'] = $chamado['problema'] != null ? ($tmp = $problema->getData('id = \'' . $chamado['problema'] . '\'')) ? $tmp[0]['problema'] : $tmp[0]['problema'] : 'Não Informado';
-        $chamado['patrimonio'] = $chamado['patrimonio'] != null ? ($tmp = $patrimonio->getData('id = \'' . $chamado['patrimonio'] . '\'')) ? $tmp[0]['descricao'] : $tmp[0]['descricao'] : 'Não Informado';
-
         if ((int) $chamado['prioridade'] < 20) {
             $chamado['nomeprioridade'] = 'Baixa';
         } elseif ((int) $chamado['prioridade'] < 40) {
@@ -302,6 +297,11 @@ class ChamadoController {
         if (empty($emails)) {
             return false;
         }
+
+        $chamado['area'] = $chamado['area'] != null ? ($tmp = $area->getData('id = \'' . $chamado['area'] . '\'')) ? $tmp[0]['area'] : $tmp[0]['area'] : 'Não Informado';
+        $chamado['modulo'] = $chamado['modulo'] != null ? ($tmp = $modulo->getData('id = \'' . $chamado['modulo'] . '\'')) ? $tmp[0]['modulo'] : $tmp[0]['modulo'] : 'Não Informado';
+        $chamado['problema'] = $chamado['problema'] != null ? ($tmp = $problema->getData('id = \'' . $chamado['problema'] . '\'')) ? $tmp[0]['problema'] : $tmp[0]['problema'] : 'Não Informado';
+        $chamado['patrimonio'] = $chamado['patrimonio'] != null ? ($tmp = $patrimonio->getData('id = \'' . $chamado['patrimonio'] . '\'')) ? $tmp[0]['descricao'] : $tmp[0]['descricao'] : 'Não Informado';
 
         $mail = new \PHPMailer();
 
@@ -349,7 +349,7 @@ class ChamadoController {
         $mail->Body .= $chamado['nomeprioridade'];
         $mail->Body .= "</li>";
         $mail->Body .= "<li>Descrição: ";
-        $mail->Body .= $chamado['problema'];
+        $mail->Body .= $chamado['descricao'];
         $mail->Body .= "</li>";
         $mail->Body .= "</ul>";
         $mail->AltBody = "Há um jogo chamado designado para a sua área";
