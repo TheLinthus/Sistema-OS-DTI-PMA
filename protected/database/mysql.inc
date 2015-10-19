@@ -9,7 +9,8 @@ class DataBase {
     // Endereço do servidor de BD
     private $dbusername = 'root';
     // Usúario no servidor de BD
-    private $dbuserpass = 'root';
+    private $dbuserpass = '';
+    //private $dbuserpass = 'root';
     // Senha no servidor de BD
     private $query = NULL;
     // Variavel para armazenar consulta no banco
