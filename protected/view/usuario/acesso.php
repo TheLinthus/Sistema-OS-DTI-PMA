@@ -9,7 +9,7 @@
         <div class="container">
             <?php include 'protected/view/header.php'; ?>
             <div id="content">
-                <form action="/v/usuario/acesso" id="form-acesso-usuario" data-base="local" method="POST" class="form-horizontal vertical-center center">
+                <form action="v/usuario/acesso" id="form-acesso-usuario" data-base="local" method="POST" class="form-horizontal vertical-center center">
                     <fieldset>
                         <legend>Acesso Usuário</legend>
                         <?php include 'protected/view/mensagem.php'; ?>
@@ -53,7 +53,7 @@
                         </div>
                         <div class="control-group">
                             <div class="controls">
-                                <a href="/v/usuario/cadastro" class="btn row-fluid">Cadastrar</a>
+                                <a href="v/usuario/cadastro" class="btn row-fluid">Cadastrar</a>
                             </div>
                         </div>
                     </fieldset>
@@ -62,7 +62,7 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/acesso.js"></script>
+        <script src="js/acesso.js"></script>
         <div id="acesso_dialog" class="ui-dialog-content ui-widget-content" style="width: auto; min-height: 19px; max-height: none; height: auto;"></div>
     </body>
 </html><?php 

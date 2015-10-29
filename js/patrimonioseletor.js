@@ -1,6 +1,6 @@
 $(document).ready(function () {
     $("#buscapatrimonio").keyup(function () {
-        $.get("/v/patrimonio/json", {b: $(this).val()}, function (data) {
+        $.get("v/patrimonio/json", {b: $(this).val()}, function (data) {
             $("tbody").html("");
             $.each(data,function (i,v) {
                 var tr = $("<tr>");

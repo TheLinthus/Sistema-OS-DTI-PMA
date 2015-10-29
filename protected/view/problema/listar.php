@@ -10,7 +10,7 @@
             <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
-                <legend>Problemas de <a href="/v/modulo/listar/area/<?php echo $response['modulo']['area']; ?>"><?php echo $response['modulo']['modulo']; ?></a></legend>
+                <legend>Problemas de <a href="v/modulo/listar/area/<?php echo $response['modulo']['area']; ?>"><?php echo $response['modulo']['modulo']; ?></a></legend>
                 <?php include 'protected/view/mensagem.php'; ?>
                 <?php if (!empty($response['data'])) { ?>
                     <div class="table-responsive">
@@ -32,7 +32,7 @@
                                             <?php echo $problema['dica']; ?>
                                         </td>
                                         <td class="span1">
-                                            <a href="/v/problema/remove/id/<?php echo $problema['id']; ?>" class="ui-icon ui-icon-trash"
+                                            <a href="v/problema/remove/id/<?php echo $problema['id']; ?>" class="ui-icon ui-icon-trash"
                                                onclick="return confirm('Você realmente quer remover esse problema?')"
                                                title="Remover">Remover</a>
                                         </td>
@@ -65,6 +65,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/problemaslista.js"></script>
+        <script src="js/problemaslista.js"></script>
     </body>
 </html><?php 

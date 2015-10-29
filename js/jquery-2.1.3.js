@@ -4949,7 +4949,7 @@ function manipulationTarget( elem, content ) {
 
 // Replace/restore the type attribute of script elements for safe DOM manipulation
 function disableScript( elem ) {
-	elem.type = (elem.getAttribute("type") !== null) + "/" + elem.type;
+	elem.type = (elem.getAttribute("type") !== null) + "" + elem.type;
 	return elem;
 }
 function restoreScript( elem ) {
@@ -8022,7 +8022,7 @@ jQuery.extend({
 		// Handle falsy url in the settings object (#10093: consistency with old signature)
 		// We also use the url parameter if available
 		s.url = ( ( url || s.url || ajaxLocation ) + "" ).replace( rhash, "" )
-			.replace( rprotocol, ajaxLocParts[ 1 ] + "//" );
+			.replace( rprotocol, ajaxLocParts[ 1 ] + "/" );
 
 		// Alias method option to type as per ticket #12004
 		s.type = options.method || options.type || s.method || s.type;

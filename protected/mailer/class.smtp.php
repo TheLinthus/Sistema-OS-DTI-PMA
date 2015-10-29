@@ -709,7 +709,7 @@ class SMTP
             $code = $matches[1];
             $code_ex = count($matches) > 2 ? $matches[2] : null;
             // Cut off error code from each response line
-            $detail = preg_replace("/{$code}[ -]" . ($code_ex ? str_replace('.', '\\.', $code_ex) . ' ' : '') . '/m', '', $this->last_reply);
+            $detail = preg_replace("{$code}[ -]" . ($code_ex ? str_replace('.', '\\.', $code_ex) . ' ' : '') . '/m', '', $this->last_reply);
         } else {
             // Fall back to simple parsing if regex fails
             $code = substr($this->last_reply, 0, 3);

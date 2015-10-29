@@ -1,6 +1,8 @@
-<?php  ?><footer class="footer">
+<?php  
+$urlBase = 'http://'.$_SERVER['HTTP_HOST'].'/chamados/';
+?><footer class="footer">
     <div class="container" id="foot">
-        <a href="/"><img src="/img/LogoDTI.png" style="height: 50px;"/></a>
+        <a href=""><img src="<?=$urlBase ?>img/LogoDTI.png" style="height: 50px;"></a>
         <div>
             <p class="visible-phone visible-tablet">
                 Em Construção: DTI PMA 2015
@@ -9,8 +11,8 @@
                 Site em Construção: DTI - Secretaria de Governo, Prefeitura Múnicipal de Alegrete 2015.
             </p>
             <p>
-                Development by 
-                <a href="https://twitter.com/TheLinthus">@TheLinthus</a><a id="build" href="/v/sistema" target="_BLANK">Build <?= $versao ?></a>
+                Development by Jean Avila Rangel e
+                <a href="https://twitter.com/TheLinthus">@TheLinthus</a><a id="build" href="v/sistema" target="_BLANK">Build <?= $versao ?></a>
             </p>
         </div>
     </div>

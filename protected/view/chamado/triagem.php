@@ -61,9 +61,9 @@
             </div>
             <!---<div class="foot-pagination"></div>-->
         </div>
-        <audio id="notification"><source src="/sounds/served.mp3"></audio>
+        <audio id="notification"><source src="sounds/served.mp3"></audio>
             <?php include 'protected/view/footer.php'; ?>
             <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/triagem.js"></script>
+        <script src="js/triagem.js"></script>
     </body>
 </html><?php 

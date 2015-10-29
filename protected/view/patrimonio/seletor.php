@@ -43,6 +43,6 @@
             </div>
         </div>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/patrimonioseletor.js"></script>
+        <script src="js/patrimonioseletor.js"></script>
     </body>
 </html><?php 

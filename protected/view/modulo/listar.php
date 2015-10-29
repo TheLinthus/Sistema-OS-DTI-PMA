@@ -10,7 +10,7 @@
             <?php include 'protected/view/header.php'; ?>
             <div id="content">
                 <!---<div class="pagination"></div>-->
-                <legend>Módulos de <a href="/v/area/listar"><?php echo $response['area']['area']; ?></a></legend>
+                <legend>Módulos de <a href="v/area/listar"><?php echo $response['area']['area']; ?></a></legend>
                 <?php include 'protected/view/mensagem.php'; ?>
                 <?php if (!empty($response['data'])) { ?>
                     <div class="table-responsive">
@@ -28,7 +28,7 @@
                                         <td><?php echo $modulo['id']; ?></td>
                                         <td><?php echo $modulo['modulo']; ?></td>
                                         <td class="span1">
-                                            <a href="/v/modulo/remove/id/<?php echo $modulo['id']; ?>" class="ui-icon ui-icon-trash"
+                                            <a href="v/modulo/remove/id/<?php echo $modulo['id']; ?>" class="ui-icon ui-icon-trash"
                                                onclick="return confirm('Você realmente quer remover esse modulo?')"
                                                title="Remover">Remover</a>
                                         </td>
@@ -36,7 +36,7 @@
                                             <a href="#" data-id="<?php echo $modulo['id']; ?>" data-nome="<?php echo $modulo['modulo']; ?>" data-area="<?php echo $modulo['area']; ?>" class="ren-modulo ui-icon ui-icon-pencil" title="Renomear Módulo">Alterar</a>
                                         </td>
                                         <td class="span1">
-                                            <a href="/v/problema/listar/modulo/<?php echo $modulo['id']; ?>" data-id="<?php echo $modulo['id']; ?>" class="ui-icon ui-icon-folder-open" title="Cadastrar e Editar Problemas">Cadastrar Problemas</a>
+                                            <a href="v/problema/listar/modulo/<?php echo $modulo['id']; ?>" data-id="<?php echo $modulo['id']; ?>" class="ui-icon ui-icon-folder-open" title="Cadastrar e Editar Problemas">Cadastrar Problemas</a>
                                         </td>
                                     </tr>
                                 <?php } ?>
@@ -60,6 +60,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/moduloslista.js"></script>
+        <script src="js/moduloslista.js"></script>
     </body>
 </html><?php 

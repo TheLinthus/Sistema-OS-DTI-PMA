@@ -73,7 +73,7 @@
                                         <td><?php echo $setor['prioridade']; ?></td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/setor/remove/id/<?php echo $setor['id']; ?>" class="ui-icon ui-icon-trash"
+                                                <a href="v/setor/remove/id/<?php echo $setor['id']; ?>" class="ui-icon ui-icon-trash"
                                                    onclick="return confirm('Você realmente quer remover esse setor?\nTodos os chamados perderão relação com o setor!')"
                                                    title="Remover">Remover</a>
                                             </td>
@@ -136,7 +136,7 @@
                 </div>
                 <div class="control-group">
                     <div class="controls">
-                        <a href="/v/setor/cadastro/" class="button new-setor"><span class="ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo Setor</a>
+                        <a href="v/setor/cadastro/" class="button new-setor"><span class="ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo Setor</a>
                     </div>
                 </div>
                 <?php include 'protected/view/paginacao.php'; ?>
@@ -145,6 +145,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/setoreslista.js"></script>
+        <script src="js/setoreslista.js"></script>
     </body>
 </html><?php 

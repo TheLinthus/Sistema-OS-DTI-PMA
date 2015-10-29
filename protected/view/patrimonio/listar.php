@@ -48,7 +48,7 @@
                                         <td class="more-info" title="<?php echo $patrimonio['observacoes']; ?>"><?php echo $patrimonio['observacoes']; ?></td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/patrimonio/remove/id/<?php echo $patrimonio['id']; ?>"class="ui-icon ui-icon-trash"
+                                                <a href="v/patrimonio/remove/id/<?php echo $patrimonio['id']; ?>"class="ui-icon ui-icon-trash"
                                                    onclick="return confirm('Você realmente quer excluir esse patrimônio da base local?/nPara isso não deve haver nenhuma Ordem de Serviço relacionada.')"
                                                    title="Excluir Patrimônico da Base Local">Remover Patrimônio</a>
                                             </td>
@@ -62,7 +62,7 @@
                                             </td>
                                         <?php } ?>
                                         <td class="span1">
-                                            <a href="/v/chamado/listar/patrimonio/<?php echo $patrimonio['id']; ?>" class="ui-icon ui-icon-folder-open" title="Exibir chamados do Patrimônio">Chamados</a>
+                                            <a href="v/chamado/listar/patrimonio/<?php echo $patrimonio['id']; ?>" class="ui-icon ui-icon-folder-open" title="Exibir chamados do Patrimônio">Chamados</a>
                                         </td>
                                     </tr>
                                 <?php } ?>
@@ -89,7 +89,7 @@
                 </div>
                 <div class="control-group">
                     <div class="controls">
-                        <a href="/v/patrimonio/cadastro/" class="button new-patrimonio"><span class="new-patrimonio ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo patrimônio *</a>
+                        <a href="v/patrimonio/cadastro/" class="button new-patrimonio"><span class="new-patrimonio ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo patrimônio *</a>
                     </div>
                 </div>
                 <?php include 'protected/view/paginacao.php'; ?>
@@ -99,6 +99,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/patrimonioslista.js"></script>
+        <script src="js/patrimonioslista.js"></script>
     </body>
 </html><?php 

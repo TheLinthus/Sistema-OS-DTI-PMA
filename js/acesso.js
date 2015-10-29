@@ -36,7 +36,7 @@ function testaMatricula() {
     }
 
     validMatricula = false;
-    $.post("/v/usuario/matriculavalidate/", {matricula: matricula, cpf: cpf, base: base}, function (data) {
+    $.post("v/usuario/matriculavalidate/", {matricula: matricula, cpf: cpf, base: base}, function (data) {
         validMatricula = data.valid;
         console.log(data);
 
@@ -72,7 +72,7 @@ function testaCGM() {
     }
 
     validCGM = false;
-    $.post("/v/usuario/cgmvalidate/", {cgm: cgm, cpf: cpf, base: base}, function (data) {
+    $.post("v/usuario/cgmvalidate/", {cgm: cgm, cpf: cpf, base: base}, function (data) {
         validCGM = data.valid;
 
         if (validCGM) {

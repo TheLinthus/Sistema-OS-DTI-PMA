@@ -25,7 +25,7 @@
                         </div>
                         <a class="button" href="javascript: history.back();">Voltar</a>
                         <a class="button" href="javascript: location.reload();">Recarregar</a>
-                        <a class="button ui-button-primary" href="/">Página Inicial</a>
+                        <a class="button ui-button-primary" href="">Página Inicial</a>
                     </div>
                 </div>
             </div>

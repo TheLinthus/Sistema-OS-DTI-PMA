@@ -47,19 +47,19 @@
                                         <td><?php echo $usuario['ip']; ?></td>
                                         <td><?php echo $usuario['email']; ?></td>
                                         <td class="span1">
-                                            <a href="/v/usuario/info/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-contact" title="Detalhes">Detalhes</a>
+                                            <a href="v/usuario/info/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-contact" title="Detalhes">Detalhes</a>
                                         </td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/usuario/remove/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-trash"
+                                                <a href="v/usuario/remove/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-trash"
                                                    onclick="return confirm('Você realmente quer remover esse usuário?\nTodas as OS relacionadas irão ser removidas também!')"
                                                    title="Remover">Remover</a>
                                             </td>
                                             <td class="span1">
-                                                <a href="/v/usuario/alterar/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-pencil" title="Alterar dados do Usuário">Alterar</a>
+                                                <a href="v/usuario/alterar/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-pencil" title="Alterar dados do Usuário">Alterar</a>
                                             </td>
                                             <td class="span1">
-                                                <a href="/v/tecnico/cadastro/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-person" title="Definir usuário como técnico">Técnico</a>
+                                                <a href="v/tecnico/cadastro/cpf/<?php echo $usuario['cpf']; ?>" class="ui-icon ui-icon-person" title="Definir usuário como técnico">Técnico</a>
                                             </td>
                                         <?php } ?>
                                     </tr>

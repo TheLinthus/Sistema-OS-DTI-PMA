@@ -1,6 +1,6 @@
 $(document).ready(function () {
     $("#buscausuario").keyup(function () {
-        $.get("/v/usuario/json", {b: $(this).val()}, function (data) {
+        $.get("v/usuario/json", {b: $(this).val()}, function (data) {
             $("#lista tbody tr").remove();
             if (data.length == 0) {
                 $("#lista").hide();

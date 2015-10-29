@@ -16,7 +16,7 @@ $(document).ready(function () {
                     var query = (method === "cadastro") ? {modulo: nome, area: area} : {modulo: nome, area: area, id: id};
                     $.ajax({
                         type: "POST",
-                        url: "/v/modulo/" + method,
+                        url: "v/modulo/" + method,
                         data: query,
                         dataType: "json",
                         success: function (data) {

@@ -38,6 +38,6 @@
             </div>
         </div>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/usuarioseletor.js"></script>
+        <script src="js/usuarioseletor.js"></script>
     </body>
 </html><?php 

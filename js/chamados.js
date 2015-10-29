@@ -21,7 +21,7 @@ $(document).ready(function () {
                     method: "POST",
                     data: post,
                     dataType: "json",
-                    url: "/v/chamado/indexupdate/",
+                    url: "v/chamado/indexupdate/",
                     success: function (data) {
                         if (data.md5 !== $("#chamados-table").data("md5")) {
                             updateTable(data);
@@ -82,6 +82,6 @@ $(document).ready(function () {
     verifyInterval = setInterval(verifyChamados, 3000);
 
     if (!$("#pesquisa").val()) {
-        history.replaceState({}, "", "/");
+        history.replaceState({}, "", "");
     }
 });

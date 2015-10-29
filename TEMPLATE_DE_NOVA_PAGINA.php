@@ -22,6 +22,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <!--<script src="/js/abrirchamado.js"></script>-->  <!-- OPCIONAL! Se é necessário um script explusivo para essa página -->
+        <!--<script src="js/abrirchamado.js"></script>-->  <!-- OPCIONAL! Se é necessário um script explusivo para essa página -->
     </body>
 </html><?php 

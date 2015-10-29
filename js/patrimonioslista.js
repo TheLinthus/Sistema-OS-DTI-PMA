@@ -17,7 +17,7 @@ $(document).ready(function () {
                 }
                 $.ajax({
                     type: "POST",
-                    url: "/v/patrimonio/" + method,
+                    url: "v/patrimonio/" + method,
                     data: query,
                     dataType: "json",
                     success: function (data) {

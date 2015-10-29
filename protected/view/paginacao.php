@@ -1,10 +1,10 @@
 <?php 
 
 if ($response['lastpage'] > 1) {
-    $url = "/v/{$mod}/{$act}";
+    $url = "v/{$mod}/{$act}";
     foreach ($input['args'] as $key => $val) {
         if ($key !== 'p') {
-            $url .= "/{$key}/{$val}";
+            $url .= "{$key}/{$val}";
         }
     } ?>
     <div class='pages ui-buttonset'>

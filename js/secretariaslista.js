@@ -22,7 +22,7 @@ $(document).ready(function () {
                     }
                     $.ajax({
                         type: "POST",
-                        url: "/v/secretaria/" + method,
+                        url: "v/secretaria/" + method,
                         data: query,
                         dataType: "json",
                         success: function (data) {

@@ -76,7 +76,7 @@
                             </div>
                             <div>
                                 <div class="controls">
-                                    <a href="/v/<?php echo $response['data']['tecnico'] ? 'tecnico' : 'usuario'; ?>/listar/" class="btn row-fluid">Voltar</a>
+                                    <a href="v/<?php echo $response['data']['tecnico'] ? 'tecnico' : 'usuario'; ?>/listar/" class="btn row-fluid">Voltar</a>
                                 </div>
                             </div>
                         <?php } ?>
@@ -86,6 +86,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/acesso.js"></script>
+        <script src="js/acesso.js"></script>
     </body>
 </html><?php 

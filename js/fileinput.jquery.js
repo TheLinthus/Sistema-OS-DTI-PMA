@@ -31,7 +31,7 @@
         //create custom control container
         this.$upload = $('<div class="input-' + (('right' === this.options.button_position) ? 'append' : 'prepend') + ' customfile">');
         //create custom control feedback
-        this.$uploadFeedback = $('<input type="text" readonly="readonly" class="customfile-feedback ' + this.options.classes + '" aria-hidden="true" value="' + this.options.feedback_text + '"/>').appendTo(this.$upload);
+        this.$uploadFeedback = $('<input type="text" readonly="readonly" class="customfile-feedback ' + this.options.classes + '" aria-hidden="true" value="' + this.options.feedback_text + '">').appendTo(this.$upload);
         //create custom control button
 //        this.$uploadButton = $('<span class="add-on customfile-button" aria-hidden="true">' + this.options.button_text + '</span>').css({float: this.options.button_position});
         this.$uploadButton = $('<span class="add-on customfile-button" aria-hidden="true">' + this.options.button_text + '</span>');

@@ -28,7 +28,7 @@ $(document).ready(function () {
                     }
                     $.ajax({
                         type: "POST",
-                        url: "/v/setor/" + method,
+                        url: "v/setor/" + method,
                         data: query,
                         dataType: "json",
                         success: function (data) {

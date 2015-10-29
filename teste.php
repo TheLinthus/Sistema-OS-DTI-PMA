@@ -23,7 +23,7 @@ function _normalise($path, $encoding = 'UTF-8')
 } ?><html>
     <head>
         <title>TESTES</title>
-        <script src="/js/jquery-1.11.1.min.js"></script>
+        <script src="js/jquery-1.11.1.min.js"></script>
     </head>
     <body>
         <pre style="padding: 5px; background-color: lightgray; border: 1px solid gray;"><?php var_dump(realpath('./js/jquery-1.11.1.min.js')); ?></pre>

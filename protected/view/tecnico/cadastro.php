@@ -25,7 +25,7 @@
                                         <span class="ui-icon ui-icon-triangle-1-w"></span>
                                     </span>
                                 </div>
-                                <a href="/v/usuario/listar/">Procurar por Usuário</a>
+                                <a href="v/usuario/listar/">Procurar por Usuário</a>
                             </div>
                         </div>
                         <hr>
@@ -46,6 +46,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/acesso.js"></script>
+        <script src="js/acesso.js"></script>
     </body>
 </html><?php 

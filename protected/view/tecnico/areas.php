@@ -48,7 +48,7 @@
                         </div>
                         <div>
                             <div class="controls">
-                                <a href="/v/tecnico/listar/" class="btn row-fluid">Voltar</a>
+                                <a href="v/tecnico/listar/" class="btn row-fluid">Voltar</a>
                             </div>
                         </div>
                     </fieldset>
@@ -57,6 +57,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/areastecnico.js"></script>
+        <script src="js/areastecnico.js"></script>
     </body>
 </html><?php 

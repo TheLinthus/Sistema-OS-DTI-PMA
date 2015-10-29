@@ -1,14 +1,14 @@
 <?php  ?><span class="bt">
     <span>Adicionar Imagens</span>
-    <input id="fileupload" type="file" name="files[]" data-url="/fileUpload.php" accept="image/*" multiple>
+    <input id="fileupload" type="file" name="files[]" data-url="fileUpload.php" accept="image/*" multiple>
 </span>
 <div id="progress">
     <div class="bar" style="width: 0%;"></div>
 </div>
 <div id="files" class="galery-links"></div>
-<script src="/js/vendor/jquery.ui.widget.js"></script>
-<script src="/js/jquery.iframe-transport.js"></script>
-<script src="/js/jquery.fileupload.js"></script>
+<script src="js/vendor/jquery.ui.widget.js"></script>
+<script src="js/jquery.iframe-transport.js"></script>
+<script src="js/jquery.fileupload.js"></script>
 <script>
     var submitForm = false;
     var fotos = 0;

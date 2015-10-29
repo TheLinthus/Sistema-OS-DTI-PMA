@@ -46,7 +46,7 @@
                                         <td><?php echo $secretaria['secretaria']; ?></td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/secretaria/remove/id/<?php echo $secretaria['id']; ?>" class="ui-icon ui-icon-trash"
+                                                <a href="v/secretaria/remove/id/<?php echo $secretaria['id']; ?>" class="ui-icon ui-icon-trash"
                                                    onclick="return confirm('Você realmente quer remover essa Secretaria?\nTodos os Setores relacionados serão removidos também!')"
                                                    title="Remover">Remover</a>
                                             </td>
@@ -74,7 +74,7 @@
                 </div>
                 <div class="control-group">
                     <div class="controls">
-                        <a href="/v/secretaria/cadastro/" class="button new-secretaria"><span class="ui-icon ui-icon-plusthick pull-left"></span>Adicionar nova Secretaria</a>
+                        <a href="v/secretaria/cadastro/" class="button new-secretaria"><span class="ui-icon ui-icon-plusthick pull-left"></span>Adicionar nova Secretaria</a>
                     </div>
                 </div>
             </div>
@@ -82,6 +82,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/secretariaslista.js"></script>
+        <script src="js/secretariaslista.js"></script>
     </body>
 </html><?php 

@@ -15,7 +15,7 @@
                     <fieldset>
                         <?php if (isset($response['data'])) { ?>
                             <legend>Atendimento: Chamado <?php echo $response['data']['id']; ?></legend>
-                            <input id="id" type="hidden" value="<?php echo $response['data']['id']; ?>"/>
+                            <input id="id" type="hidden" value="<?php echo $response['data']['id']; ?>">
                             <div class="control-group no-margin-bottom">
                                 <label class="control-label" for="datacriacao">Data de Criação</label>
                                 <div class="controls">
@@ -190,6 +190,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/atenderchamado.js"></script>
+        <script src="js/atenderchamado.js"></script>
     </body>
 </html><?php 

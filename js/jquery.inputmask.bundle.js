@@ -1168,7 +1168,7 @@
             },
             masksCache: {},
             escapeRegex: function(str) {
-                var specials = [ "/", ".", "*", "+", "?", "|", "(", ")", "[", "]", "{", "}", "\\" ];
+                var specials = [ "", ".", "*", "+", "?", "|", "(", ")", "[", "]", "{", "}", "\\" ];
                 return str.replace(new RegExp("(\\" + specials.join("|\\") + ")", "gim"), "\\$1");
             },
             format: function(value, options, metadata) {
@@ -1354,7 +1354,7 @@
                 }
             },
             leapday: "29/02/",
-            separator: "/",
+            separator: "",
             yearrange: {
                 minyear: 1900,
                 maxyear: 2099
@@ -1549,7 +1549,7 @@
             mask: "y/1/2",
             placeholder: "yyyy/mm/dd",
             alias: "mm/dd/yyyy",
-            leapday: "/02/29",
+            leapday: "02/29",
             onKeyUp: function(e) {
                 var $input = $(this);
                 if (e.ctrlKey && e.keyCode == $.inputmask.keyCode.RIGHT) {
@@ -1724,7 +1724,7 @@
             mask: "1/y",
             placeholder: "mm/yyyy",
             leapday: "donotuse",
-            separator: "/",
+            separator: "",
             alias: "mm/dd/yyyy"
         }
     }), $.fn.inputmask;

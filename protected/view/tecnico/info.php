@@ -93,6 +93,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/acesso.js"></script>
+        <script src="js/acesso.js"></script>
     </body>
 </html><?php 

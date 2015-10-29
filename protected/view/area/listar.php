@@ -33,7 +33,7 @@
                                         <td><?php echo $area['nivel']; ?></td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/area/remove/id/<?php echo $area['id']; ?>" class="ui-icon ui-icon-trash"
+                                                <a href="v/area/remove/id/<?php echo $area['id']; ?>" class="ui-icon ui-icon-trash"
                                                    onclick="return confirm('Você realmente quer remover essa área?\nTodos os técnicos perderão relação com a área selecionada!')"
                                                    title="Remover">Remover</a>
                                             </td>
@@ -44,7 +44,7 @@
                                         <?php if ($_SESSION['nivel'] >= 2) { ?>
                                             <td class="span1">
                                                 <?php if (isset($_SESSION['areas'][$area['id']])) { ?>
-                                                    <a href="/v/modulo/listar/area/<?php echo $area['id']; ?>" data-id="<?php echo $area['id']; ?>" class="ui-icon ui-icon-folder-open" title="Cadastrar e Editar Modulos">Cadastrar Modulos</a>
+                                                    <a href="v/modulo/listar/area/<?php echo $area['id']; ?>" data-id="<?php echo $area['id']; ?>" class="ui-icon ui-icon-folder-open" title="Cadastrar e Editar Modulos">Cadastrar Modulos</a>
                                                 <?php } ?>
                                             </td>
                                         <?php } ?>
@@ -73,6 +73,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/areaslista.js"></script>
+        <script src="js/areaslista.js"></script>
     </body>
 </html><?php 

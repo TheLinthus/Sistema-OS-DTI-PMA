@@ -4,7 +4,7 @@ $(document).ready(function () {
     var trying = false;
     
     clickChamado = function(v) {
-        var janela = open("/v/chamado/atender/id/" + $(v).data("id"));
+        var janela = open("v/chamado/atender/id/" + $(v).data("id"));
         if (!janela) {
             alert("Janela bloquada, habilite popups neste site em seu navegador!");
         }
@@ -16,7 +16,7 @@ $(document).ready(function () {
             $.ajax({
                 dataType: "json",
                 data: {md5: $("#chamados-table").data("md5")},
-                url: "/v/chamado/triagemupdate/",
+                url: "v/chamado/triagemupdate/",
                 success: function (data) {
                     if (data.md5 !== $("#chamados-table").data("md5")) {
                         updateTable(data);

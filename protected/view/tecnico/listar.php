@@ -49,17 +49,17 @@
                                         <td><?php echo $usuario['cgm']; ?></td>
                                         <td><?php echo $usuario['email']; ?></td>
                                         <td class="span1">
-                                            <a href="/v/tecnico/info/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-contact" title="Detalhes">Exibir Dados do Usuário (Detalhes)</a>
+                                            <a href="v/tecnico/info/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-contact" title="Detalhes">Exibir Dados do Usuário (Detalhes)</a>
                                         </td>
                                         <?php if ($_SESSION['nivel'] == 3) { ?>
                                             <td class="span1">
-                                                <a href="/v/tecnico/remove/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-closethick" onclick="return confirm('Você realmente quer transoformar esse técnico em um usuário normal?')" title="Remover Privilégios de Técnico (Mudar para Usuário Comum)">Remover Privilégios de Técnico</a>
+                                                <a href="v/tecnico/remove/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-closethick" onclick="return confirm('Você realmente quer transoformar esse técnico em um usuário normal?')" title="Remover Privilégios de Técnico (Mudar para Usuário Comum)">Remover Privilégios de Técnico</a>
                                             </td>
                                             <td class="span1">
-                                                <a href="/v/usuario/alterar/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-pencil" title="Alterar dados do Usuário">Alterar</a>
+                                                <a href="v/usuario/alterar/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-pencil" title="Alterar dados do Usuário">Alterar</a>
                                             </td>
                                             <td class="span1">
-                                                <a href="/v/tecnico/areas/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-transferthick-e-w" title="Alterar Áreas do Técnico">Áreas</a>
+                                                <a href="v/tecnico/areas/cpf/<?php echo $usuario['cpf']; ?>"class="ui-icon ui-icon-transferthick-e-w" title="Alterar Áreas do Técnico">Áreas</a>
                                             </td>
                                         <?php } ?>
                                     </tr>
@@ -68,7 +68,7 @@
                         </table>
                     </div>
                 <?php } ?>
-                <a href="/v/tecnico/cadastro/" class="button"><span class="ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo Técnico</a>
+                <a href="v/tecnico/cadastro/" class="button"><span class="ui-icon ui-icon-plusthick pull-left"></span>Adicionar novo Técnico</a>
                 <?php include 'protected/view/paginacao.php'; ?>
             </div>
             <!---<div class="foot-pagination"></div>-->

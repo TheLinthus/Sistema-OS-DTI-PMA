@@ -85,7 +85,7 @@ $("#patrimonio-btn").click(function (e) {
     var midX, midY;
     midX = window.innerWidth / 2 - 250 + window.screenX;
     midY = window.innerHeight / 2 - 200 + window.screenY;
-    window.open("/v/patrimonio/seletor", "patrimonio-seletor", "height=370, width=500, location=0, scrollbars=0,resizable=0, top=" + midY + ", left=" + midX);
+    window.open("v/patrimonio/seletor", "patrimonio-seletor", "height=370, width=500, location=0, scrollbars=0,resizable=0, top=" + midY + ", left=" + midX);
 });
 
 function loadForm() {
@@ -112,7 +112,7 @@ $("#save-chamado").click(function () {
     var data = loadForm();
     $.ajax({
         type: "POST",
-        url: "/v/chamado/salvar",
+        url: "v/chamado/salvar",
         data: data,
         processData: false,
         contentType: false,
@@ -142,7 +142,7 @@ $("#forward-chamado").click(function () {
         var data = loadForm();
         $.ajax({
             type: "POST",
-            url: "/v/chamado/encaminhar",
+            url: "v/chamado/encaminhar",
             processData: false,
             contentType: false,
             data: data,
@@ -176,7 +176,7 @@ $("#finish-chamado").click(function () {
         var data = loadForm();
         $.ajax({
             type: "POST",
-            url: "/v/chamado/finalizar",
+            url: "v/chamado/finalizar",
             processData: false,
             contentType: false,
             data: data,
@@ -184,7 +184,7 @@ $("#finish-chamado").click(function () {
             success: function (data) {
                 if (data.ok) {
                     alert("Chamado finalizado!");
-                    window.location = "/v/chamado/gerarcomprovante/id/" + id;
+                    window.location = "v/chamado/gerarcomprovante/id/" + id;
                 } else {
                     alert(data.mensagem);
                 }
@@ -216,7 +216,7 @@ $('#file-dialog').dialog({
     width: 300,
     buttons: {
         "Abrir": function () {
-            window.location = "/v/arquivos/download/id/" + $("#file-dialog").data("id");
+            window.location = "v/arquivos/download/id/" + $("#file-dialog").data("id");
             $(this).dialog("close");
         },
         "Modificar": function () {

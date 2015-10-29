@@ -9,7 +9,7 @@
         <div class="container">
             <?php include 'protected/view/header.php'; ?>
             <div id="content">
-                <form action="/v/chamado/confirmar" id="form-abrir-chamado" method="POST" enctype="multipart/form-data" class="form-horizontal">
+                <form action="v/chamado/confirmar" id="form-abrir-chamado" method="POST" enctype="multipart/form-data" class="form-horizontal">
                     <div id="step-box" class="etapa1">
                         <fieldset id="step-1" data-etapa="1" class="step active">
                             <legend>Abrir Chamado - Selecionar Secretaria</legend>
@@ -19,7 +19,7 @@
                                     <?php foreach ($response['secretarias'] as $secretaria) { ?>
                                         <a class="item secretaria next-step <?php echo $response['sec'] == $secretaria['id'] ? 'active' : ''; ?>"
                                            data-id="<?php echo $secretaria['id']; ?>"
-                                           href="/v/chamado/cadastro/sec/<?php echo $secretaria['id']; ?>">
+                                           href="v/chamado/cadastro/sec/<?php echo $secretaria['id']; ?>">
                                                <?php echo $secretaria['secretaria']; ?>
                                         </a>
                                     <?php } ?>
@@ -61,7 +61,7 @@
                                         <a class="item setor next-step <?php echo $response['set'] == $setor['id'] ? 'active' : ''; ?>"
                                            data-id="<?php echo $setor['id']; ?>"
                                            data-secretaria="<?php echo $setor['secretaria']; ?>"
-                                           href="/v/chamado/cadastro/sec/<?php echo $setor['secretaria']; ?>/set/<?php echo $setor['id']; ?>">
+                                           href="v/chamado/cadastro/sec/<?php echo $setor['secretaria']; ?>/set/<?php echo $setor['id']; ?>">
                                                <?php echo $setor['setor']; ?>
                                         </a>
                                     <?php } ?>
@@ -84,7 +84,7 @@
                                 </div>
                             <?php } ?>
                             <footer style="display: none;">
-                                <a href="/v/chamado/cadastro" class="button prev-step input-large">Voltar</a>
+                                <a href="v/chamado/cadastro" class="button prev-step input-large">Voltar</a>
                                 <div class="ui-widget pull-right">
                                     <div class="ui-state-highlight ui-corner-all">
                                         <p>
@@ -125,11 +125,11 @@
                                                         type="radio" id="area-<?php echo $area['id']; ?>"
                                                         value="<?php echo $area['id']; ?>" name="area"
                                                         <?php echo $response['area'] == $area['id'] ? 'checked' : ''; ?>
-                                                        class="ui-helper-hidden-accessible"/>
+                                                        class="ui-helper-hidden-accessible">
                                                     <label for="area-<?php echo $area['id']; ?>">
                                                         <a 
                                                             data-id="<?php echo $area['id']; ?>"
-                                                            href="/v/chamado/cadastro/sec/<?php echo $response['sec']; ?>/set/<?php echo $response['set']; ?>/area/<?php echo $area['id']; ?>">
+                                                            href="v/chamado/cadastro/sec/<?php echo $response['sec']; ?>/set/<?php echo $response['set']; ?>/area/<?php echo $area['id']; ?>">
                                                                 <?php echo $area['area']; ?>
                                                         </a>
                                                     </label>
@@ -138,7 +138,7 @@
                                             <input
                                                 type="radio" id="unknow-area" value="-1"
                                                 name="area" <?php echo $response['area'] == -1 ? 'checked' : ''; ?>
-                                                class="ui-helper-hidden-accessible"/>
+                                                class="ui-helper-hidden-accessible">
                                             <label for="unknow-area" style="display: none;">
                                                 Não informar
                                             </label>
@@ -163,7 +163,7 @@
                                                        <?php echo $modulo['area'] != $response['area'] ? 'style=\'display: none;\'' : ''; ?>>
                                                     <a 
                                                         data-id="<?php echo $modulo['id']; ?>"
-                                                        href="/v/chamado/cadastro/sec/<?php echo $response['sec']; ?>/set/<?php echo $response['set']; ?>/area/<?php echo $modulo['area']; ?>/prob/<?php echo $modulo['id']; ?>">
+                                                        href="v/chamado/cadastro/sec/<?php echo $response['sec']; ?>/set/<?php echo $response['set']; ?>/area/<?php echo $modulo['area']; ?>/prob/<?php echo $modulo['id']; ?>">
                                                             <?php echo $modulo['modulo']; ?>
                                                     </a>
                                                 </label>
@@ -171,7 +171,7 @@
                                             <input
                                                 type="radio" id="unknow-modulo" value="-1"
                                                 name="modulo" <?php echo $response['mod'] == -1 ? 'checked' : ''; ?>
-                                                class="ui-helper-hidden-accessible"/>
+                                                class="ui-helper-hidden-accessible">
                                             <label for="unknow-modulo" style="display: none;">
                                                 Não informar
                                             </label>
@@ -192,7 +192,7 @@
                                                     <?php echo $response['problema'] == $problema['id'] ? 'checked' : ''; ?>
                                                     class="ui-helper-hidden-accessible" data-modulo="<?php echo $problema['modulo']; ?>"
                                                     <?php echo $problema['modulo'] != $response['mod'] ? 'style=\'display: none;\'' : ''; ?>
-                                                    title="<?php echo $problema['problema']; ?>" data-dica="<?php echo $problema['dica']; ?>"/>
+                                                    title="<?php echo $problema['problema']; ?>" data-dica="<?php echo $problema['dica']; ?>">
                                                 <label for="problema-<?php echo $problema['id']; ?>" data-modulo="<?php echo $problema['modulo']; ?>"
                                                        title="<?php echo $problema['dica']; ?>"
                                                        <?php echo $problema['modulo'] != $response['mod'] ? 'style=\'display: none;\'' : ''; ?>>
@@ -201,7 +201,7 @@
                                                     <?php } ?>
                                                     <a 
                                                         data-id="<?php echo $problema['id']; ?>"
-                                                        href="/v/chamado/cadastro/sec/<?php echo $response['sec']; ?>/set/<?php echo $response['set']; ?>/area/<?php echo $response['area']; ?>/mod/<?php echo $problema['mod']; ?>/prob/<?php echo $problema['id']; ?>">
+                                                        href="v/chamado/cadastro/sec/<?php echo $response['sec']; ?>/set/<?php echo $response['set']; ?>/area/<?php echo $response['area']; ?>/mod/<?php echo $problema['mod']; ?>/prob/<?php echo $problema['id']; ?>">
                                                             <?php echo $problema['problema']; ?>
                                                     </a>
                                                 </label>
@@ -209,7 +209,7 @@
                                             <input
                                                 type="radio" id="unknow-problema" value="-1"
                                                 name="problema" <?php echo $response['problema'] == -1 ? 'checked' : ''; ?>
-                                                class="ui-helper-hidden-accessible"/>
+                                                class="ui-helper-hidden-accessible">
                                             <label for="unknow-problema" style="display: none;">
                                                 Outro
                                             </label>
@@ -271,35 +271,35 @@
                                             <input id="prioridade-baixa"
                                                    type="radio" value="1"
                                                    name="prioridade"
-                                                   class="ui-helper-hidden-accessible"/>
+                                                   class="ui-helper-hidden-accessible">
                                             <label for="prioridade-baixa">
                                                 Baixa
                                             </label>
                                             <input id="prioridade-media"
                                                    type="radio" value="2"
                                                    name="prioridade" checked
-                                                   class="ui-helper-hidden-accessible"/>
+                                                   class="ui-helper-hidden-accessible">
                                             <label for="prioridade-media">
                                                 Média
                                             </label>
                                             <input id="prioridade-alta"
                                                    type="radio" value="3"
                                                    name="prioridade"
-                                                   class="ui-helper-hidden-accessible"/>
+                                                   class="ui-helper-hidden-accessible">
                                             <label for="prioridade-alta">
                                                 Alta
                                             </label>
                                             <input id="prioridade-muitoalta"
                                                    type="radio" value="4"
                                                    name="prioridade"
-                                                   class="ui-helper-hidden-accessible"/>
+                                                   class="ui-helper-hidden-accessible">
                                             <label for="prioridade-muitoalta">
                                                 Muito Alta
                                             </label>
                                             <input id="prioridade-urgente"
                                                    type="radio" value="5"
                                                    name="prioridade"
-                                                   class="ui-helper-hidden-accessible"/>
+                                                   class="ui-helper-hidden-accessible">
                                             <label for="prioridade-urgente">
                                                 Urgente
                                             </label>
@@ -312,7 +312,7 @@
                                 <a href="#" class="button prev-step input-large" style="display: none;">Voltar</a>
                                 <input type="submit" id="enviar-chamado"
                                        class="button btn-primary next-step input-large ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"
-                                       value="Enviar"/>
+                                       value="Enviar">
                             </footer>
                         </fieldset>
                     </div>
@@ -321,6 +321,6 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/abrirchamado.js"></script>
+        <script src="js/abrirchamado.js"></script>
     </body>
 </html><?php 

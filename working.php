@@ -11,7 +11,7 @@
             <div id="content">
                 <div class="vertical-center pagination-centered">
                     <div class="container">
-                        <img src="/img/men-at-work.png"/>
+                        <img src="img/men-at-work.png">
                         <h1 id="info-code">Em construção</h1>
                         <div class="ui-widget">
                             <div class="ui-state-default ui-corner-all">

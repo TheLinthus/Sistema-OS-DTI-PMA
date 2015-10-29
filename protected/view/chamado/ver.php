@@ -1,4 +1,4 @@
-<?php  ?><!DOCTYPE html>
+<?php ?><!DOCTYPE html>
 <html lang="pt">
     <head>
         <?php include 'protected/view/headscripts.php'; ?>
@@ -121,14 +121,22 @@
                                     <?php } ?>
                                 </div>
                             </div>
-                        <?php } ?>
+                            <div>
+                            <?php } ?>
+                                
+                            <?php
+//                            $urlBase = 'http://'.$_SERVER['HTTP_HOST'].'/chamados/';
+                            echo "<a href=/chamados/protected/view/chamado/gerarPDF.php>Gerar PDF do documento<a/>";
+                            ?>
+                        </div>
                     </fieldset>
                 </form>
+
             </div>
             <!---<div class="foot-pagination"></div>-->
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="/js/verchamado.js"></script>
+        <script src="js/verchamado.js"></script>
     </body>
 </html><?php 

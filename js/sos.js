@@ -1,7 +1,7 @@
 var notifyInterval = null;
 var title = document.title;
 var clickChamado = function (v) {
-    window.location = "/v/chamado/ver/id/" + $(v).data("id");
+    window.location = "v/chamado/ver/id/" + $(v).data("id");
 }
 
 function onBlur() {
@@ -439,11 +439,11 @@ $(document).ready(function () {
     $(".buscar-bt").click(function () {
         var mod = $(this).data("mod");
         var act = $(this).data("act") || "listar";
-        var newlocation = "/v/" + mod + "/" + act; // define caminho para redirecionamento
-        newlocation += $("#pesquisa").val() !== "" ? "/b/" + encodeURIComponent($("#pesquisa").val()) : ""; // adiciona argumentos de busca
-        newlocation += $(".filtro:selected").length ? "/f/" + $(".filtro:selected").val() : ""; // adciona argumentos de filtro
-        newlocation += $("#dataA").length ? "/da/" + $("#dataA").val() : "";
-        newlocation += $("#dataB").length ? "/db/" + $("#dataB").val() : "";
+        var newlocation = "v/" + mod + "" + act; // define caminho para redirecionamento
+        newlocation += $("#pesquisa").val() !== "" ? "b/" + encodeURIComponent($("#pesquisa").val()) : ""; // adiciona argumentos de busca
+        newlocation += $(".filtro:selected").length ? "f/" + $(".filtro:selected").val() : ""; // adciona argumentos de filtro
+        newlocation += $("#dataA").length ? "da/" + $("#dataA").val() : "";
+        newlocation += $("#dataB").length ? "db/" + $("#dataB").val() : "";
         window.location = newlocation;
     });
     $("#filtro").change(function () {
