@@ -1,4 +1,8 @@
-<?php  ?><!DOCTYPE html>
+<?php 
+
+$urlBase = 'http://'.$_SERVER['HTTP_HOST'].'/chamados/';
+
+?><!DOCTYPE html>
 <html lang="pt">
     <head>
         <?php include 'protected/view/headscripts.php'; ?>
@@ -63,6 +67,6 @@
         <audio id="notification"><source src="sounds/served.mp3"></audio>
             <?php include 'protected/view/footer.php'; ?>
             <?php include 'protected/view/footscripts.php'; ?>
-        <script src="js/tecnico.js"></script>
+        <script src="<?=$urlBase ?>js/tecnico.js"></script>
     </body>
 </html><?php 

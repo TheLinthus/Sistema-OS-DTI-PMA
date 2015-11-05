@@ -1,4 +1,6 @@
 <?php
+$urlBase = 'http://'.$_SERVER['HTTP_HOST'].'/chamados/';
+
 require_once './protected/controller/login.inc';
 if (!isset($_SESSION)) {
     session_start();
@@ -11,13 +13,13 @@ if (!isset($_SESSION)) {
         <?php if (Login::isLogedIn()) { ?>
             <li><a>Chamados</a>
                 <ul>
-                    <li><a href="v/chamado/cadastro/">Abrir Novo Chamado</a></li>
+                    <li><a href="<?=$urlBase ?>v/chamado/cadastro/">Abrir Novo Chamado</a></li>
                     <?php if (Login::isTriagem()) { ?>
-                        <li><a href="v/chamado/triagem/">Triagem</a></li>
+                        <li><a href="<?=$urlBase ?>v/chamado/triagem/">Triagem</a></li>
                         <?php } if ($_SESSION['nivel'] > 0) { ?>
-                        <li><a href="v/chamado/tecnico/">Chamados Designados</a></li>
+                        <li><a href="<?=$urlBase ?>v/chamado/tecnico/">Chamados Designados</a></li>
                     <?php } ?>
-                    <li><a href="v/chamado/historico/">Histórico de Chamados</a></li>
+                    <li><a href="<?=$urlBase ?>v/chamado/historico/">Histórico de Chamados</a></li>
                     <li><a href="">Listar Todos os Chamados</a></li>
                 </ul>
             </li>
@@ -25,15 +27,15 @@ if (!isset($_SESSION)) {
                 <li>
                     <a>Base Local</a>
                     <ul>
-                        <li><a href="v/area/listar/">Áreas</a></li>
-                        <li><a href="v/patrimonio/listar/">Patrimônios</a></li>
-                        <li><a href="v/secretaria/listar/">Secretarias</a></li>
-                        <li><a href="v/setor/listar/">Setores</a></li>
-                        <li><a href="v/tecnico/listar/">Técnicos</a></li>
-                        <li><a href="v/usuario/listar/">Usuários</a></li>
+                        <li><a href="<?=$urlBase ?>v/area/listar/">Áreas</a></li>
+                        <li><a href="<?=$urlBase ?>v/patrimonio/listar/">Patrimônios</a></li>
+                        <li><a href="<?=$urlBase ?>v/secretaria/listar/">Secretarias</a></li>
+                        <li><a href="<?=$urlBase ?>v/setor/listar/">Setores</a></li>
+                        <li><a href="<?=$urlBase ?>v/tecnico/listar/">Técnicos</a></li>
+                        <li><a href="<?=$urlBase ?>v/usuario/listar/">Usuários</a></li>
                     </ul>
                 </li>
-                <li><a href="v/pesquisa/">Pesquisar</a></li>
+                <li><a href="<?=$urlBase ?>v/pesquisa/">Pesquisar</a></li>
             <?php } ?>
             <li class="pull-right">
                 <a href="v/<?php echo $_SESSION['nivel'] > 0 ? 'tecnico' : 'usuario'; ?>/info/">
@@ -48,15 +50,15 @@ if (!isset($_SESSION)) {
                     <?php if (Login::isDti()) { ?>
                         <li><a href="v/tecnico/senha">Alterar Senha</a></li>
                     <?php } ?>
-                    <li><a href="v/usuario/sair" onclick="return confirm('Você realmente quer sair?')">Sair</a></li>
+                    <li><a href="<?=$urlBase ?>v/usuario/sair" onclick="return confirm('Você realmente quer sair?')">Sair</a></li>
                 </ul>
             </li>
         <?php } else { ?>
-            <li class="pull-right"><a href="v/usuario/acesso">Entrar</a>
+            <li class="pull-right"><a href="<?=$urlBase ?>v/usuario/acesso">Entrar</a>
                 <ul>
-                    <li><a href="v/usuario/acesso">Usuário</a>
-                    <li><a href="v/tecnico/acesso">Técnico</a></li>
-                    <li><a href="v/usuario/cadastro">Cadastro</a></li>
+                    <li><a href="<?=$urlBase ?>v/usuario/acesso">Usuário</a>
+                    <li><a href="<?=$urlBase ?>v/tecnico/acesso">Técnico</a></li>
+                    <li><a href="<?=$urlBase ?>v/usuario/cadastro">Cadastro</a></li>
                 </ul>
             </li>
         <?php } ?>

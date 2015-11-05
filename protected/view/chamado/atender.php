@@ -1,7 +1,10 @@
-<?php ?><!DOCTYPE html>
+<?php
+$urlBase = 'http://' . $_SERVER['HTTP_HOST'] . '/chamados/';
+?><!DOCTYPE html>
 <html lang="pt">
     <head>
         <?php include 'protected/view/headscripts.php'; ?>
+
         <title>Chamado <?php echo $input['args']['id']; ?></title>
     </head>
     <body>
@@ -168,6 +171,13 @@
                                     <span class="ui-icon ui-icon-disk pull-left"></span>
                                     Salvar Alterações
                                 </a>
+
+                                <a id="relatoriochamado" name="relatoriochamado" class="button" type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModalRelatorio">
+                                    <span class="ui-icon ui-icon-print pull-left"></span>
+                                    Gerar Relatório
+                                </a>
+
+
                                 <a id="forward-chamado" class="button">
                                     <span class="ui-icon ui-icon-seek-next pull-left"></span>
                                     <?php echo (($tmp = end($response['data']['estado'])) ? $tmp['tipo'] : $tmp['tipo']) == 5 ? 'Atender' : 'Encaminhar'; ?>
@@ -186,10 +196,64 @@
             <div id="file-dialog" title="Arquivo">
                 Escolha uma ação:
             </div>
+
+
+
+
+            <!-- Modal -->
+            <div class="modal fade" id="myModalRelatorio" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="myModalLabel">Preencha os dados referentes ao chamado</h4>
+                        </div>
+                        <div class="modal-body">
+
+
+                            <form class="form-horizontal" action="<?= $urlBase ?>protected/controller/gerarPDF.php?funcao=finalizarRelatorio" method="post">
+                                <?php $nomeRelatorio = 'Identificador_'.$response['data']['id']; ?>
+                                <input type="hidden" name="nomeRelatorio" value="<?= $nomeRelatorio?>">
+                                <fieldset>
+
+                                    <!-- Text input-->
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label" for="nomeTecnico">Nome do Técnico</label>  
+                                        <div class="col-md-5">
+                                            <input id="nomeTecnico" name="nomeTecnico" type="text" placeholder="Digite aqui o nome do técnico" class="form-control input-md" required="">
+                                            <span class="help-block">*Nome completo</span>  
+                                        </div>
+                                    </div>
+
+                                    <!-- Text input-->
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label" for="nomeResponsavel">Nome do Responsável</label>  
+                                        <div class="col-md-5">
+                                            <input id="nomeResponsavel" name="nomeResponsavel" type="text" placeholder="Digite aqui o nome do responsável" class="form-control input-md" required="">
+                                            <span class="help-block">*Nome completo</span>  
+                                        </div>
+                                    </div>
+
+
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                                        <button type="submit" class="btn btn-primary">Gerar Relatório em PDF</button>
+                                    </div>
+
+                                </fieldset>
+                            </form>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
             <!---<div class="foot-pagination"></div>-->
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="js/atenderchamado.js"></script>
+        <script src="<?= $urlBase ?>js/atenderchamado.js"></script>
     </body>
 </html><?php 

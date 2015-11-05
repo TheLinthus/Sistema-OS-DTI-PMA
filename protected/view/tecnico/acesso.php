@@ -1,3 +1,10 @@
+<?php  
+
+$urlBase = 'http://'.$_SERVER['HTTP_HOST'].'/chamados/';
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="pt">
     <head>
@@ -9,7 +16,7 @@
         <div class="container">
             <?php include 'protected/view/header.php'; ?>
             <div id="content">
-                <form action="v/tecnico/acesso" id="form-acesso-tecnico" data-base="local" method="POST" class="form-horizontal vertical-center center">
+                <form action="<?=$urlBase ?>v/tecnico/acesso" id="form-acesso-tecnico" data-base="local" method="POST" class="form-horizontal vertical-center center">
                     <fieldset>
                         <legend>Acesso Técnico</legend>
                         <?php include 'protected/view/mensagem.php'; ?>
@@ -41,7 +48,7 @@
         </div>
         <?php include 'protected/view/footer.php'; ?>
         <?php include 'protected/view/footscripts.php'; ?>
-        <script src="js/acesso.js"></script>
+        <script src="<?=$urlBase ?>js/acesso.js"></script>
         <div id="acesso_dialog" class="ui-dialog-content ui-widget-content" style="width: auto; min-height: 19px; max-height: none; height: auto;"></div>
     </body>
 </html><?php 

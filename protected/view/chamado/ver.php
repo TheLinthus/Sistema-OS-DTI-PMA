@@ -2,6 +2,101 @@
 <html lang="pt">
     <head>
         <?php include 'protected/view/headscripts.php'; ?>
+        <?php
+        include('protected/controller/gerarPDF.php');
+
+        $objetoPdf = new gerarPDF();
+        $nomeChamado = $response['data']['id'];
+
+        $stringConteudoHTML = '<fieldset>
+                        <legend>Informações do Chamado'.$response['data']['id'].'</legend>
+        
+                            <div class="control-group">
+                                <label class="control-label" for="datacriacao">Data de Criação</label>
+                                <div class="controls">
+                                    <input id="datacriacao" type="text" value="'.$response['data']['estado'][0]['data'].'" class="input-xlarge" disabled>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="secretaria">Secretaria</label>
+                                <div class="controls">
+                                    <input id="secretaria" type="text" value="'.$response['data']['secretaria'].'" class="input-xlarge" disabled>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="setor">Setor</label>
+                                <div class="controls">
+                                    <input id="setor" type="text" value="'.$response['data']['setor'].'>" class="input-xlarge" disabled>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="iporigem">IP de origem</label>
+                                <div class="controls">
+                                    <input id="iporigem" type="text" value="'.$response['data']['iporigem'].'" class="input-xlarge" disabled>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="control-group">
+                                <label class="control-label" for="area">Área</label>
+                                <div class="controls">
+                                    <input id="area" type="text" value="'.$response['data']['area'].'" class="input-xlarge natural" disabled>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="modulo">Modulo</label>
+                                <div class="controls">
+                                    <input id="modulo" type="text" value="'.$response['data']['modulo'].'" class="input-xlarge" disabled>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="problema">Problema</label>
+                                <div class="controls">
+                                    <input id="problema" type="text" value="'.$response['data']['problema'].'" class="input-xlarge" disabled>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="prioridade">Prioridade</label>
+                                <div class="controls">
+                                    <input id="prioridade" type="text" value="'.$response['data']['nomeprioridade'].'" class="input-xlarge" disabled>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="descricao">Descrição</label>
+                                <div class="controls">
+                                    <textarea id="descricao" class="input-xlarge" disabled>'.$response['data']['descricao'].'</textarea>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="solucao">Solução</label>
+                                <div class="controls">
+                                    <textarea id="solucao" class="input-xlarge" disabled>'.$response['data']['solucao'].'</textarea>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="patrimonio">Patrimônio</label>
+                                <div class="controls">
+                                    <input id="patrimonio" type="text" value="'.$response['data']['patrimonio'].'" class="input-xlarge" disabled>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="control-group">
+                                <label class="control-label" for="usuario">Usuário</label>
+                                <div class="controls">
+                                    <input id="usuario" type="text" value="'.$response['data']['usuario']['nome'].'" class="input-xlarge" disabled>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="ip">Endereço IP</label>
+                                <div class="controls">
+                                    <input id="ip" type="text" value="'.$response['data']['usuario']['ip'].'" class="input-xlarge" disabled>
+                                </div>
+                            </div>
+                       
+                        </div>
+                    </fieldset>';
+       // $objetoPdf->criarArquivo($stringConteudoHTML, $nomeChamado);
+        ?>
+
         <title>Chamado <?php echo $response['data']['id']; ?></title>
     </head>
     <body>
@@ -123,11 +218,13 @@
                             </div>
                             <div>
                             <?php } ?>
-                                
+
                             <?php
 //                            $urlBase = 'http://'.$_SERVER['HTTP_HOST'].'/chamados/';
-                            echo "<a href=/chamados/protected/view/chamado/gerarPDF.php>Gerar PDF do documento<a/>";
+                            echo "<a href=/chamados/protected/controller/gerarPDF.php>Gerar PDF do documento<a/>";
                             ?>
+
+
                         </div>
                     </fieldset>
                 </form>
