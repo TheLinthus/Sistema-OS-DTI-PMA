@@ -1,5 +1,5 @@
-<?php 
-$urlBase = 'http://'.$_SERVER['HTTP_HOST'].'/chamados/';
+<?php
+$urlBase = 'http://' . $_SERVER['HTTP_HOST'] . '/chamados/';
 ?><!DOCTYPE html>
 <html lang="pt">
     <head>
@@ -91,19 +91,21 @@ $urlBase = 'http://'.$_SERVER['HTTP_HOST'].'/chamados/';
                             </tr>
                         </thead>
                         <tbody>
+                            <?php $i = 0; ?>
                             <?php foreach ($response['data'] as $chamado) { ?>
-                                <tr id="chamado-<?php echo $chamado['id']; ?>" class="chamado-row"
-                                    data-id="<?php echo $chamado['id']; ?>"
-                                    data-prioridade="<?php echo $chamado['prioridade']; ?>"
-                                    data-estado="<?php echo $chamado['estados'][0]['estado']; ?>"
-                                    data-area="<?php echo $chamado['area']; ?>"
-                                    data-usuario="<?php echo $chamado['usuario']; ?>"
-                                    data-data="<?php echo $chamado['estados'][0]['data']; ?>"
-                                    data-descricao="<?php echo $chamado['descricao']; ?>
+                                <tr id = "chamado-<?php echo $chamado['id']; ?>" class = "chamado-row"
+                                    data-id = "<?php echo $chamado['id']; ?>"
+                                    data-prioridade = "<?php echo $chamado['prioridade']; ?>"
+                                    data-estado = "<?php echo $chamado['estados'][0]['estado']; ?>"
+                                    data-area = "<?php echo $chamado['area']; ?>"
+                                    data-usuario = "<?php echo $chamado['usuario']; ?>"
+                                    data-data = "<?php echo $chamado['estados'][0]['data']; ?>"
+                                    data-descricao = "<?php echo $chamado['descricao']; ?>
                                     (<?php echo $chamado['problema']; ?>
                                     )"
-                                    tabindex="0">
-                                    <td class="span1"><?php echo $chamado['id']; ?>
+                                    tabindex = "0">
+                                    <td class = "span1"><?php echo $chamado['id'];
+                                ?>
                                     </td>
                                     <td class="span1 more-info" title="<?php echo $chamado['estados'][0]['data']; ?>"><?php echo $chamado['estados'][0]['data']; ?>
                                     </td>
@@ -124,16 +126,71 @@ $urlBase = 'http://'.$_SERVER['HTTP_HOST'].'/chamados/';
                                         <?php echo $chamado['estados'][0]['estado']; ?>
                                     </td>
                                 </tr>
-                            <?php } ?>
+
+
+                                <?php
+                                $arrayDadosLinha = array("chamado" => $chamado['id'], "prioridade" => $chamado['prioridade'], "estado" => $chamado['estados'][0]['estado'], "area" => $chamado['area'], "usuario" => $chamado['usuario'], "data" => $chamado['estados'][0]['data'], "descricao" => $chamado['descricao']);
+                                $arrayChamado[$i] = $arrayDadosLinha;
+                                $i++;
+                                ?>
+                                <!-- Definindo os valores para geração de relatório -->
+                                <?php $nomeRelatorio = 'Identificador_' . $chamado['id']; ?>
+                            <input type="hidden" name="nomeRelatorio" value="<?= $nomeRelatorio ?>">
+
+                            <?php $prioridade = $chamado['prioridade']; ?>
+                            <input type="hidden" name="prioridade" value="<?= $prioridade ?>">
+
+                            <?php $estado = $chamado['estados'][0]['estado']; ?>
+                            <input type="hidden" name="estado" value="<?= $estado ?>">
+
+                            <?php $area = $chamado['area']; ?>
+                            <input type="hidden" name="area" value="<?= $area ?>">
+
+                            <?php $usuario = $chamado['usuario']; ?>
+                            <input type="hidden" name="usuario" value="<?= $usuario ?>">
+
+                            <?php $data = $chamado['estados'][0]['data']; ?>
+                            <input type="hidden" name="data" value="<?= $data ?>">
+
+                            <?php $descricao = $chamado['descricao']; ?>
+                            <input type="hidden" name="descricao" value="<?= $descricao ?>">
+
+
+
+
+                        <?php } ?>
                         </tbody>
                     </table>
                 </div>
             </div>
+            <?php
+
+            for ($k = 0; $k < sizeof($arrayChamado); $k++) {
+                echo $arrayChamado[$k]['estado'];
+            }
+            ?>
+
+            <div class="form-body">
+                <form class="form-horizontal" action="<?= $urlBase ?>protected/controller/gerarPDF.php?funcao=criarArquivoRelatorio" method="post">
+                    <fieldset>
+
+
+                        <div class="btn-group">
+                            <button type="submit" class="btn relatorio-bt">
+                                Gerar Relatório do Periodo
+                            </button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+
+
+
             <div class="foot-pagination"></div>
         </div>
         <audio id="notification"><source src="sounds/served.mp3"></audio>
-            <?php include 'protected/view/footer.php'; ?>
+<?php include 'protected/view/footer.php'; ?>
             <?php include 'protected/view/footscripts.php'; ?>
-        <script src="<?=$urlBase ?>js/chamados.js"></script>
+        <script src="<?= $urlBase ?>js/chamados.js"></script>
     </body>
 </html><?php 

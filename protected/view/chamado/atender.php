@@ -212,34 +212,36 @@ $urlBase = 'http://' . $_SERVER['HTTP_HOST'] . '/chamados/';
 
 
                             <form class="form-horizontal" action="<?= $urlBase ?>protected/controller/gerarPDF.php?funcao=finalizarRelatorio" method="post">
-                                <?php $nomeRelatorio = 'Identificador_'.$response['data']['id']; ?>
-                                <input type="hidden" name="nomeRelatorio" value="<?= $nomeRelatorio?>">
-                                <fieldset>
+                                <div>
 
-                                    <!-- Text input-->
-                                    <div class="form-group">
-                                        <label class="col-md-4 control-label" for="nomeTecnico">Nome do Técnico</label>  
-                                        <div class="col-md-5">
-                                            <input id="nomeTecnico" name="nomeTecnico" type="text" placeholder="Digite aqui o nome do técnico" class="form-control input-md" required="">
-                                            <span class="help-block">*Nome completo</span>  
+                                    <?php $nomeRelatorio = 'Identificador_' . $response['data']['id']; ?>
+                                    <input type="hidden" name="nomeRelatorio" value="<?= $nomeRelatorio ?>">
+                                    <fieldset>
+
+                                        <!-- Text input-->
+                                        <div class="form-group">
+                                            <label class="col-md-4 control-label" for="nomeTecnico">Nome do Técnico: </label>  
+                                            <div class="col-md-5">
+                                                <input id="nomeTecnico" name="nomeTecnico" type="text" placeholder="Digite aqui o nome do técnico" class="form-control input-md" required="">
+                                                <span class="help-block">*Nome completo</span>  
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <!-- Text input-->
-                                    <div class="form-group">
-                                        <label class="col-md-4 control-label" for="nomeResponsavel">Nome do Responsável</label>  
-                                        <div class="col-md-5">
-                                            <input id="nomeResponsavel" name="nomeResponsavel" type="text" placeholder="Digite aqui o nome do responsável" class="form-control input-md" required="">
-                                            <span class="help-block">*Nome completo</span>  
+                                        <!-- Text input-->
+                                        <div class="form-group">
+                                            <label class="col-md-4 control-label" for="nomeResponsavel">Nome do Responsável: </label>  
+                                            <div class="col-md-5">
+                                                <input id="nomeResponsavel" name="nomeResponsavel" type="text" placeholder="Digite aqui o nome do responsável" class="form-control input-md" required="">
+                                                <span class="help-block">*Nome completo</span>  
+                                            </div>
                                         </div>
-                                    </div>
 
 
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-                                        <button type="submit" class="btn btn-primary">Gerar Relatório em PDF</button>
-                                    </div>
-
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                                            <button type="submit" class="btn btn-primary">Gerar Relatório em PDF</button>
+                                        </div>
+                                </div>
                                 </fieldset>
                             </form>
 

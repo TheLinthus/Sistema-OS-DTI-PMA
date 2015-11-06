@@ -10,6 +10,19 @@ if ($_REQUEST["funcao"] == "finalizarRelatorio") {
     $objetoClasse->finalizarRelatorio($nomeRelatorio, $nomeTecnico, $nomeResponsavel);
 }
 
+if ($_REQUEST["funcao"] == "criarArquivoRelatorio") {
+    $nomeRelatorio = $_REQUEST["nomeRelatorio"];
+    $arrayRecebido = $_REQUEST["array"];
+    $prioridade = $_REQUEST["prioridade"];
+    $estado = $_REQUEST["estado"];
+    $area = $_REQUEST["area"];
+    $usuario = $_REQUEST["usuario"];
+    $data = $_REQUEST["data"];
+    $descricao = $_REQUEST["descricao"];
+    
+    $objetoClasse->criarArquivoRelatorio($nomeRelatorio, $arrayRecebido, $prioridade, $estado, $area, $usuario, $data, $descricao);
+}
+
 class gerarPDF {
 
     function finalizarRelatorio($nomeRelatorio, $nomeTecnico, $nomeResponsavel) {
@@ -19,15 +32,57 @@ class gerarPDF {
         $data = date("d/m/Y");
         $html = "<html><body>";
         $html .= '<table>
-   <tr><td><img src="C:/xampp/htdocs/chamados/img/brasao.jpg" height="100"></td> 
-   <td style="width: 633px; padding:10px; _width: 250px;"> <h2 align="center">PREFEITURA MUNICIPAL DE ALEGRETE</h2>
-   <h3 align="center">Estado do Rio Grande do Sul</h3>
-   <h3 align="center">Divisão de Tecnologia da Informação - DTI</h3>
-   </td> </tr>
-</table>';
+            <tr><td><img src="C:/xampp/htdocs/chamados/img/brasao.jpg" height="100"></td> 
+                <td style="width: 633px; padding:10px; _width: 250px;"> <h2 align="center">PREFEITURA MUNICIPAL DE ALEGRETE</h2>
+                    <h3 align="center">Estado do Rio Grande do Sul</h3>
+                    <h3 align="center">Divisão de Tecnologia da Informação - DTI</h3>
+                </td> </tr>
+        </table>';
         $html .= "<br><br>";
         $html .= "_______________________ <br> Técnico: $nomeTecnico<br><br>";
         $html .= "_______________________ <br> Responsável: $nomeResponsavel<br><br><br>";
+        $html .= "Alegrete, $data";
+        $html .= "</body></html>";
+        $dompdf = new DOMPDF();
+        $dompdf->load_html($html);
+        ob_clean();
+        $dompdf->render();
+        $dompdf->stream("$nomeArquivoPDF.pdf");
+    }
+
+    function criarArquivoRelatorio($nomeRelatorio, $arrayRecebido, $prioridade, $estado, $area, $usuario, $data, $descricao) {
+
+        require "C:/xampp/htdocs/chamados/dompdf/dompdf_config.inc.php";
+
+        $nomeArquivoPDF = "Arquivo_Chamado_" . $nomeRelatorio;
+        date_default_timezone_set('America/Sao_Paulo');
+        $data = date("d/m/Y");
+        $html = "<html><body>";
+        $html .= '<table>
+            <tr><td><img src="C:/xampp/htdocs/chamados/img/brasao.jpg" height="100"></td> 
+                <td style="width: 633px; padding:10px; _width: 250px;"> <h2 align="center">PREFEITURA MUNICIPAL DE ALEGRETE</h2>
+                    <h3 align="center">Estado do Rio Grande do Sul</h3>
+                    <h3 align="center">Divisão de Tecnologia da Informação - DTI</h3>
+                </td> </tr>
+        </table>';
+        
+        for ($k = 0; $k < sizeof($arrayChamado); $k++) {
+
+                             $estado = $arrayChamado[$k]['estado']; 
+
+
+                          $descricao = $arrayChamado[$k]['descricao']; 
+
+            }
+            
+        $html .= 'Chamado: '.$nomeRelatorio.'<br>';
+        $html .= 'Prioridade: '.$prioridade.'<br>';
+        $html .= 'Estado: '.$estado.'<br>';
+        $html .= 'Área: '.$area.'<br>';
+        $html .= 'Usuário: '.$usuario.'<br>';
+        $html .= 'Data: '.$data.'<br>';
+        $html .= 'Descrição: '.$descricao.'<br>';
+        $html .= "<br><br>";
         $html .= "Alegrete, $data";
         $html .= "</body></html>";
         $dompdf = new DOMPDF();
@@ -38,35 +93,6 @@ class gerarPDF {
     }
 
     function criarArquivo($stringHTML, $nomeChamado, $nomeTecnico, $nomeResponsavel) {
-
-        require "/dompdf/dompdf_config.inc.php";
-
-        $nomeArquivoPDF = "Arquivo_Chamado_" . $nomeChamado;
-        date_default_timezone_set('America/Sao_Paulo');
-        $data = date("d/m/Y");
-        $html = "<html><body>";
-        $html .= '<table>
-   <tr><td><img src="img/brasao.jpg" height="100"></td> 
-   <td style="width: 633px; padding:10px; _width: 250px;"> <h2 align="center">PREFEITURA MUNICIPAL DE ALEGRETE</h2>
-   <h3 align="center">Estado do Rio Grande do Sul</h3>
-   <h3 align="center">Divisão de Tecnologia da Informação - DTI</h3>
-   </td> </tr>
-</table>';
-
-        $html .= $stringHTML;
-        $html .= "<br><br>";
-        $html .= "_______________________ <br> Técnico: $nomeTecnico<br><br>";
-        $html .= "_______________________ <br> Responsável: $nomeResponsavel<br><br><br>";
-        $html .= "Alegrete, $data";
-        $html .= "</body></html>";
-        $dompdf = new DOMPDF();
-        $dompdf->load_html($html);
-        ob_clean();
-        $dompdf->render();
-        $dompdf->stream("$nomeArquivoPDF.pdf");
-    }
-
-    function criarArquivoRelatorio($stringHTML, $nomeChamado, $nomeTecnico, $nomeResponsavel) {
 
 //       
 //$this->dbname = 'sos';
@@ -104,5 +130,4 @@ class gerarPDF {
     }
 
 }
-
 ?>
