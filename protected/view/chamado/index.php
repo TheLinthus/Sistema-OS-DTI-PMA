@@ -42,11 +42,7 @@ $urlBase = 'http://' . $_SERVER['HTTP_HOST'] . '/chamados/';
                                     <div class="input-append">
                                         <input id="dataB" name="dataB" type="date" class="input-medium"
                                                value="<?php echo isset($response['dataB']) ? $response['dataB'] : date('Y-m-d'); ?>">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn relatorio-bt" disabled title="Em construção">
-                                                Gerar Relatório do Periodo
-                                            </button>
-                                        </div>
+                                      
                                     </div>
                                 </div>
                             </div>
@@ -91,7 +87,9 @@ $urlBase = 'http://' . $_SERVER['HTTP_HOST'] . '/chamados/';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php $i = 0; ?>
+                            <?php $historico = array("");
+                            ?>
+
                             <?php foreach ($response['data'] as $chamado) { ?>
                                 <tr id = "chamado-<?php echo $chamado['id']; ?>" class = "chamado-row"
                                     data-id = "<?php echo $chamado['id']; ?>"
@@ -127,57 +125,28 @@ $urlBase = 'http://' . $_SERVER['HTTP_HOST'] . '/chamados/';
                                     </td>
                                 </tr>
 
-
                                 <?php
-                                $arrayDadosLinha = array("chamado" => $chamado['id'], "prioridade" => $chamado['prioridade'], "estado" => $chamado['estados'][0]['estado'], "area" => $chamado['area'], "usuario" => $chamado['usuario'], "data" => $chamado['estados'][0]['data'], "descricao" => $chamado['descricao']);
-                                $arrayChamado[$i] = $arrayDadosLinha;
-                                $i++;
+                                array_push($historico, "<b>Chamado id: " . $chamado['id'] . "</b> <br> Usuário: " . $chamado['usuario'] . " <br> Data: ".$chamado['estados'][0]['data']." <br> Área: " . $chamado['area'] . " <br> Prioridade: " . $chamado['nomeprioridade'] . " <br> Descrição: " . $chamado['descricao'] . " <br> Estado: " . $chamado['estados'][0]['estado'] . "<br>______________________________________________________________________________________<br>");
+                                $historicoTexto = "";
+                                foreach ($historico as $elementos) {
+                                    $historicoTexto = $historicoTexto . $elementos . "<br>";
+                                }
                                 ?>
-                                <!-- Definindo os valores para geração de relatório -->
-                                <?php $nomeRelatorio = 'Identificador_' . $chamado['id']; ?>
-                            <input type="hidden" name="nomeRelatorio" value="<?= $nomeRelatorio ?>">
 
-                            <?php $prioridade = $chamado['prioridade']; ?>
-                            <input type="hidden" name="prioridade" value="<?= $prioridade ?>">
+                            <?php } ?>
 
-                            <?php $estado = $chamado['estados'][0]['estado']; ?>
-                            <input type="hidden" name="estado" value="<?= $estado ?>">
-
-                            <?php $area = $chamado['area']; ?>
-                            <input type="hidden" name="area" value="<?= $area ?>">
-
-                            <?php $usuario = $chamado['usuario']; ?>
-                            <input type="hidden" name="usuario" value="<?= $usuario ?>">
-
-                            <?php $data = $chamado['estados'][0]['data']; ?>
-                            <input type="hidden" name="data" value="<?= $data ?>">
-
-                            <?php $descricao = $chamado['descricao']; ?>
-                            <input type="hidden" name="descricao" value="<?= $descricao ?>">
-
-
-
-
-                        <?php } ?>
                         </tbody>
                     </table>
                 </div>
             </div>
-            <?php
-
-            for ($k = 0; $k < sizeof($arrayChamado); $k++) {
-                echo $arrayChamado[$k]['estado'];
-            }
-            ?>
 
             <div class="form-body">
                 <form class="form-horizontal" action="<?= $urlBase ?>protected/controller/gerarPDF.php?funcao=criarArquivoRelatorio" method="post">
+                    <input type="hidden" name="todasInfoChamado" value="<?= $historicoTexto ?>">
                     <fieldset>
-
-
                         <div class="btn-group">
                             <button type="submit" class="btn relatorio-bt">
-                                Gerar Relatório do Periodo
+                                Gerar Relatório
                             </button>
                         </div>
                     </fieldset>
