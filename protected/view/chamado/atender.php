@@ -143,10 +143,19 @@ $urlBase = 'http://' . $_SERVER['HTTP_HOST'] . '/chamados/';
                             <div class="control-group">
                                 <label class="control-label">Histórico</label>
                                 <div class="controls">
+                                    <?php $historico = array(""); ?>
                                     <?php foreach ($response['data']['estado'] as $estado) { ?>
                                         <input type="text"
                                                value="(<?php echo $estado['data']; ?>) <?php echo $estado['estado']; ?>"
                                                class="input-xlarge" disabled/>
+                                               <?php
+                                               //  array_push($historico, "(".$estado['data'].") ".$estado['estado']);
+                                               array_push($historico, "(" . $estado['data'] . ") " . $estado['estado']);
+                                               $historicoTexto = "";
+                                               foreach ($historico as $elementos) {
+                                                   $historicoTexto = $historicoTexto.$elementos . "<br>";
+                                               }
+                                               ?>
                                            <?php } ?>
                                 </div>
                             </div>
@@ -214,8 +223,23 @@ $urlBase = 'http://' . $_SERVER['HTTP_HOST'] . '/chamados/';
                             <form class="form-horizontal" action="<?= $urlBase ?>protected/controller/gerarPDF.php?funcao=finalizarRelatorio" method="post">
                                 <div>
 
-                                    <?php $nomeRelatorio = 'Identificador_' . $response['data']['id']; ?>
+                                    <?php $nomeRelatorio = $response['data']['id']; ?>
                                     <input type="hidden" name="nomeRelatorio" value="<?= $nomeRelatorio ?>">
+
+                                    <?php $data = $response['data']['estado'][0]['data']; ?>
+                                    <input type="hidden" name="data" value="<?= $data ?>">
+
+                                    <?php $setor = $response['data']['setor']; ?>
+                                    <input type="hidden" name="setor" value="<?= $setor ?>">
+
+                                    <?php $solucao = $response['data']['solucao']; ?>
+                                    <input type="hidden" name="solucao" value="<?= $solucao ?>">
+
+                                    <input type="hidden" name="historico" value="<?= $historicoTexto ?>">
+
+                                    <?php $descricao = $response['data']['descricao']; ?>
+                                    <input type="hidden" name="descricao" value="<?= $descricao ?>">
+
                                     <fieldset>
 
                                         <!-- Text input-->
